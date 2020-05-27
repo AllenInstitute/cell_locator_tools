@@ -25,17 +25,16 @@ def do_analysis():
     nx0 = img_data.shape[2]
     ny0 = img_data.shape[1]
     nz0 = img_data.shape[0]
-    already_set = set()
+
     allen_coords = np.zeros((3,nx0*ny0*nz0), dtype=float)
-    for ix in range(nx0):
-        for iy in range(ny0):
-            for iz in range(nz0):
-                pt_dex = ix*(ny0*nz0)+iy*(nz0)+iz
-                assert pt_dex not in already_set
-                already_set.add(pt_dex)
-                allen_coords[0,pt_dex] = ix*resolution
-                allen_coords[1,pt_dex] = iy*resolution
-                allen_coords[2,pt_dex] = iz*resolution
+
+    mesh = np.meshgrid(resolution*np.arange(nx0),
+                       resolution*np.arange(ny0),
+                       resolution*np.arange(nz0))
+
+    allen_coords[2,:] = mesh.pop(2).flatten()
+    allen_coords[1,:] = mesh.pop(1).flatten()
+    allen_coords[0,:] = mesh.pop(0).flatten()
 
     print('grid created in %e seconds' % (time.time()-t0))
 
