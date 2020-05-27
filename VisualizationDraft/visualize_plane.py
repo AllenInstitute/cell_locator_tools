@@ -103,7 +103,10 @@ if __name__ == "__main__":
     print('applied inverse_transform after %e sec' % (time.time()-t0))
 
 
-    valid_dex = np.where(np.abs(cell_locator_arr[2,:])<0.9*resolution)
+    t_arr = np.dot(cell_to_allen_mat,np.dot(transform, cell_locator_arr))
+    np.testing.assert_allclose(t_arr, pt_arr, rtol=1.0e-10, atol=1.0e-10)
+
+    valid_dex = np.where(np.abs(cell_locator_arr[2,:])<0.5*resolution)
     valid_pts = pt_arr[:,valid_dex]
     print('valid bounds')
     for ii in range(3):
@@ -145,9 +148,30 @@ if __name__ == "__main__":
             new_img_pts[0, pt_dex] = ix*resolution
 
     new_img_pts = np.dot(transform, new_img_pts)
+    print('after new_img_pts multiplied by transform')
+    for ii in range(4):
+        imin = new_img_pts[ii,:].min()
+        imax = new_img_pts[ii,:].max()
+        print('%e %e' % (imin,imax))
+
     new_img_pts = np.dot(cell_to_allen_mat, new_img_pts)
 
-    print(np.unique(new_img_pts[3,:]))
+    print('unique new_img_pts[3,:] ',np.unique(new_img_pts[3,:]))
+    new_img_pts = np.round(new_img_pts/resolution).astype(int)
+    print('new image points imin, imax')
+    for ii in range(3):
+        imin = new_img_pts[ii,:].min()
+        imax = new_img_pts[ii,:].max()
+        print('%d %d' % (imin, imax))
+
+    valid_dex = np.where(np.logical_and(new_img_pts[0,:]>=0,
+                         np.logical_and(new_img_pts[0,:]<nx0,
+                         np.logical_and(new_img_pts[1,:]>=0,
+                         np.logical_and(new_img_pts[1,:]<ny0,
+                         np.logical_and(new_img_pts[2,:]>=0,
+                                        new_img_pts[2,:]<nz0))))))
+
+    print('n_valid %d' % len(valid_dex[0]))
 
     exit()
 
