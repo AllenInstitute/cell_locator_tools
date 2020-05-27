@@ -153,8 +153,8 @@ if __name__ == "__main__":
             pt_dex = ix*n_img_y+iy
             new_img_pts[3, pt_dex] = 1.0
             new_img_pts[2, pt_dex] = 0.0
-            new_img_pts[1, pt_dex] = iy*resolution
-            new_img_pts[0, pt_dex] = ix*resolution
+            new_img_pts[1, pt_dex] = (img_y_min+iy)*resolution
+            new_img_pts[0, pt_dex] = (img_x_min+ix)*resolution
 
     new_img_pts = np.dot(transform, new_img_pts)
     print('after new_img_pts multiplied by transform')
