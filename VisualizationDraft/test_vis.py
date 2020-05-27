@@ -25,6 +25,7 @@ def do_analysis():
     nx0 = img_data.shape[2]
     ny0 = img_data.shape[1]
     nz0 = img_data.shape[0]
+    img_data = img_data.flatten()
 
     allen_coords = np.zeros((3,nx0*ny0*nz0), dtype=float)
 
@@ -93,22 +94,23 @@ def do_analysis():
                          np.logical_and(new_allen_dexes[2,:]>=0,
                                         new_allen_dexes[2,:]<nz0))))))
 
-        new_img = np.zeros((n_img_x, n_img_y), dtype=float)
-
         img_ix = (new_img_pts[0,:]/resolution-img_x_min).astype(int)
         img_iy = (new_img_pts[1,:]/resolution-img_y_min).astype(int)
 
-        for i_pt in valid_dex[0]:
-            ix = img_ix[i_pt]
-            iy = img_iy[i_pt]
+        new_img = np.zeros(n_img_x*n_img_y, dtype=float)
+        ix_arr = img_ix[valid_dex]
+        iy_arr = n_img_y-1-img_iy[valid_dex]
+        ii_flat = ix_arr*n_img_y+iy_arr
 
-            a_x = new_allen_dexes[0,i_pt]
-            a_y = new_allen_dexes[1,i_pt]
-            a_z = new_allen_dexes[2,i_pt]
-            if ix>=new_img.shape[0] or iy>=new_img.shape[1]:
-                print(ix,iy,' -- ',a_z,a_y,a_x)
+        ax_arr = new_allen_dexes[0,valid_dex]
+        ay_arr = new_allen_dexes[1,valid_dex]
+        az_arr = new_allen_dexes[2,valid_dex]
 
-            new_img[ix,n_img_y-1-iy] = img_data[a_z, a_y, a_x]
+
+        img_dex_flat = az_arr*(nx0*ny0)+ay_arr*nx0+ax_arr
+        pixel_vals = img_data[img_dex_flat]
+        new_img[ii_flat] = pixel_vals
+        new_img = new_img.reshape(n_img_x, n_img_y)
 
         new_img = new_img.transpose()
         print('got img data in %e seconds' % (time.time()-t1))
