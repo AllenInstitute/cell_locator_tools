@@ -63,5 +63,5 @@ class CellLocatorTransformation(object):
         # convert to CellLocator coordinates
         pts_4d = np.dot(self._slice_to_c, pts_4d)
         # convert to Allen convention
-        pts_4d = np.dot(self._c_to_a, pts_4d)
+        pts_4d = np.dot(self._c_to_a_transposition, pts_4d)
         return pts_4d[:3,:]
