@@ -13,8 +13,18 @@ import json
 def allen_to_cell_locator(pt):
     return np.array([pt[2], -pt[0], -pt[1]])
 
+allen_to_cell_mat = np.array([[0.0, 0.0, 1.0, 0.0],
+                              [-1.0, 0.0, 0.0, 0.0],
+                              [0.0, -1.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 1.0]])
+
 def cell_locator_to_allen(pt):
     return np.array([-pt[1], -pt[2], pt[0]])
+
+cell_to_allen_mat = np.array([[0.0, -1.0, 0.0, 0.0],
+                              [0.0, 0.0, -1.0, 0.0],
+                              [1.0, 0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0, 1.0]])
 
 if __name__ == "__main__":
 
@@ -40,6 +50,7 @@ if __name__ == "__main__":
 
     inverse_transform = np.linalg.inv(transform)
 
+    # testing block
     in_pt = np.zeros(4, dtype=float)
     in_pt[3] = 1.0
     c_pt = np.zeros(4, dtype=float)
@@ -48,11 +59,15 @@ if __name__ == "__main__":
     for ii in range(100):
         in_pt[:3] = 10000.0*(rng.random_sample(3)-0.5)
         c_pt[:3] = allen_to_cell_locator(in_pt)
+        n_pt = np.dot(allen_to_cell_mat, in_pt)
+        np.testing.assert_allclose(n_pt, c_pt, rtol=1.0e-10, atol=1.0e-10)
         t_pt = np.dot(inverse_transform, c_pt)
         assert np.abs(t_pt[3]-1.0)<1.0e-10
         b_pt = np.dot(transform, t_pt)
         np.testing.assert_allclose(c_pt, b_pt, rtol=1.0e-10, atol=1.0e-10)
         out_pt = cell_locator_to_allen(b_pt[:3])
+        n_pt = np.dot(cell_to_allen_mat, b_pt)
+        np.testing.assert_allclose(n_pt, in_pt, rtol=1.0e-10, atol=1.0e-10)
         np.testing.assert_allclose(out_pt, in_pt[:3], rtol=1.0e-10, atol=1.0e-10)
 
     px_max = None
