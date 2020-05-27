@@ -14,22 +14,6 @@ import hashlib
 
 import cell_locator_utils
 
-def allen_to_cell_locator(pt):
-    return np.array([pt[2], -pt[0], -pt[1]])
-
-allen_to_cell_mat = np.array([[0.0, 0.0, 1.0, 0.0],
-                              [-1.0, 0.0, 0.0, 0.0],
-                              [0.0, -1.0, 0.0, 0.0],
-                              [0.0, 0.0, 0.0, 1.0]])
-
-def cell_locator_to_allen(pt):
-    return np.array([-pt[1], -pt[2], pt[0]])
-
-cell_to_allen_mat = np.array([[0.0, -1.0, 0.0, 0.0],
-                              [0.0, 0.0, -1.0, 0.0],
-                              [1.0, 0.0, 0.0, 0.0],
-                              [0.0, 0.0, 0.0, 1.0]])
-
 def do_analysis():
 
     resolution = 25
