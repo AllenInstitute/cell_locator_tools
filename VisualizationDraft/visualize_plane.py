@@ -145,8 +145,6 @@ if __name__ == "__main__":
     n_img_x = img_x_max-img_x_min+1
     n_img_y = img_y_max-img_y_min+1
 
-    new_img = np.zeros((n_img_x, n_img_y), dtype=float)
-
     new_img_pts = np.zeros((4, n_img_x*n_img_y), dtype=float)
     for ix in range(n_img_x):
         for iy in range(n_img_y):
@@ -156,33 +154,53 @@ if __name__ == "__main__":
             new_img_pts[1, pt_dex] = (img_y_min+iy)*resolution
             new_img_pts[0, pt_dex] = (img_x_min+ix)*resolution
 
-    new_img_pts = np.dot(transform, new_img_pts)
+    new_img_pts_allen = np.dot(transform, new_img_pts)
     print('after new_img_pts multiplied by transform')
     for ii in range(4):
         imin = new_img_pts[ii,:].min()
         imax = new_img_pts[ii,:].max()
         print('%e %e' % (imin,imax))
 
-    new_img_pts = np.dot(cell_to_allen_mat, new_img_pts)
+    new_img_pts_allen = np.dot(cell_to_allen_mat, new_img_pts_allen)
 
     print('unique new_img_pts[3,:] ',np.unique(new_img_pts[3,:]))
-    new_img_pts = np.round(new_img_pts/resolution).astype(int)
+    new_img_pts_allen = np.round(new_img_pts_allen/resolution).astype(int)
     print('new image points imin, imax')
     for ii in range(3):
-        imin = new_img_pts[ii,:].min()
-        imax = new_img_pts[ii,:].max()
+        imin = new_img_pts_allen[ii,:].min()
+        imax = new_img_pts_allen[ii,:].max()
         print('%d %d' % (imin, imax))
 
-    valid_dex = np.where(np.logical_and(new_img_pts[0,:]>=0,
-                         np.logical_and(new_img_pts[0,:]<nx0,
-                         np.logical_and(new_img_pts[1,:]>=0,
-                         np.logical_and(new_img_pts[1,:]<ny0,
-                         np.logical_and(new_img_pts[2,:]>=0,
-                                        new_img_pts[2,:]<nz0))))))
+    valid_dex = np.where(np.logical_and(new_img_pts_allen[0,:]>=0,
+                         np.logical_and(new_img_pts_allen[0,:]<nx0,
+                         np.logical_and(new_img_pts_allen[1,:]>=0,
+                         np.logical_and(new_img_pts_allen[1,:]<ny0,
+                         np.logical_and(new_img_pts_allen[2,:]>=0,
+                                        new_img_pts_allen[2,:]<nz0))))))
 
     print('n_valid %d' % len(valid_dex[0]))
 
-    exit()
+    new_img = np.zeros((n_img_x, n_img_y), dtype=float)
+
+    img_ix = (new_img_pts[0,:]/resolution-img_x_min).astype(int)
+    img_iy = (new_img_pts[1,:]/resolution-img_y_min).astype(int)
+    print(img_ix.min(),img_ix.max())
+    print(img_iy.min(),img_iy.max())
+    print(new_img.shape)
+
+    for i_pt in valid_dex[0]:
+        ix = img_ix[i_pt]
+        iy = img_iy[i_pt]
+
+        a_x = new_img_pts_allen[0,i_pt]
+        a_y = new_img_pts_allen[1,i_pt]
+        a_z = new_img_pts_allen[2,i_pt]
+        if ix>=new_img.shape[0] or iy>=new_img.shape[1]:
+            print(ix,iy,' -- ',a_z,a_y,a_x)
+
+        new_img[ix,n_img_y-1-iy] = img_data[a_z, a_y, a_x]
+
+    new_img = new_img.transpose()
     plt.figure(figsize=(10,10))
     plt.imshow(new_img)
     plt.show()
