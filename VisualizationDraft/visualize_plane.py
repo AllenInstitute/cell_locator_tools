@@ -115,6 +115,15 @@ if __name__ == "__main__":
         print('%d %d' % (np.round(imin/resolution).astype(int),
                          np.round(imax/resolution).astype(int)))
 
+    #print('assess grid-like nature')
+    #x = np.round(valid_pts[1,:]/resolution).astype(int)
+    #y = np.round(valid_pts[2,:]/resolution).astype(int)
+    #for i1 in range(319):
+    #    chosen = np.where(x==i1)
+    #    y_chosen = np.sort(y[chosen])
+    #    d = np.diff(y_chosen)
+    #    print(i1,np.unique(d),y_chosen.min(),y_chosen.max())
+
     print('')
     print('in new img space')
     for ii in range(2):
