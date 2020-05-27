@@ -38,6 +38,10 @@ class CellLocatorTransformation(object):
                 self._slice_to_c[irow, icol] = orientation[irow*4+icol]
 
         self._c_to_slice = np.linalg.inv(self._slice_to_c)
+        self._a_to_slice = np.dot(self._c_to_slice,
+                                  self._a_to_c_transposition)
+        self._slice_to_a = np.dot(self._c_to_a_transposition,
+                                  self._slice_to_c)
 
     def allen_to_slice(self, pts):
         """
@@ -46,10 +50,7 @@ class CellLocatorTransformation(object):
         pts_4d = np.zeros((4,pts.shape[1]), dtype=float)
         pts_4d[:3,:] = pts
         pts_4d[3,:] = 1.0
-        # convert to CellLocator convention
-        pts_4d = np.dot(self._a_to_c_transposition, pts_4d)
-        # convert to coordinates with z normal to the slice
-        pts_4d = np.dot(self._c_to_slice, pts_4d)
+        pts_4d = np.dot(self._a_to_slice, pts_4d)
         return pts_4d[:3,:]
 
     def slice_to_allen(self, pts):
@@ -60,8 +61,5 @@ class CellLocatorTransformation(object):
         pts_4d[:2,:] = pts
         pts_4d[2,:] = 0.0
         pts_4d[3,:] = 1.0
-        # convert to CellLocator coordinates
-        pts_4d = np.dot(self._slice_to_c, pts_4d)
-        # convert to Allen convention
-        pts_4d = np.dot(self._c_to_a_transposition, pts_4d)
+        pts_4d = np.dot(self._slice_to_a, pts_4d)
         return pts_4d[:3,:]
