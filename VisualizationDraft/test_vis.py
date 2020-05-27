@@ -41,6 +41,8 @@ def do_analysis():
     print('grid created in %e seconds' % (time.time()-t0))
 
     for dex in range(4):
+        t1 = time.time()
+
         annotation_name = '../CellLocatorAnnotations/annotation_%d.json' % dex
         img_name = tempfile.mkstemp(dir='.',
                                 prefix='annotation_%d_' % dex,
@@ -53,7 +55,6 @@ def do_analysis():
 
         coord_converter = cell_locator_utils.CellLocatorTransformation(annotation)
 
-        t1 = time.time()
         valid_dex = np.where(coord_converter.get_slice_mask_from_allen(allen_coords,
                                                                        resolution))
         print('valid_dex after %e seconds' % (time.time()-t1))
