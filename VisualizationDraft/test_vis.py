@@ -30,7 +30,8 @@ def do_analysis():
 
     mesh = np.meshgrid(resolution*np.arange(nx0),
                        resolution*np.arange(ny0),
-                       resolution*np.arange(nz0))
+                       resolution*np.arange(nz0),
+                       indexing = 'ij')
 
     allen_coords[2,:] = mesh.pop(2).flatten()
     allen_coords[1,:] = mesh.pop(1).flatten()
@@ -73,7 +74,8 @@ def do_analysis():
         new_img_pts = np.zeros((2, n_img_x*n_img_y), dtype=float)
 
         mesh = np.meshgrid(resolution*(img_x_min+np.arange(n_img_x)),
-                           resolution*(img_y_min+np.arange(n_img_y)))
+                           resolution*(img_y_min+np.arange(n_img_y)),
+                           indexing='ij')
 
         new_img_pts[1,:] = mesh.pop(1).flatten()
         new_img_pts[0,:] = mesh.pop(0).flatten()
