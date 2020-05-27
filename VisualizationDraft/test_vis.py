@@ -37,8 +37,10 @@ def do_analysis():
                 allen_coords[1,pt_dex] = iy*resolution
                 allen_coords[2,pt_dex] = iz*resolution
 
-    for dex in range(4):
+    print('grid created in %e seconds' % (time.time()-t0))
 
+    for dex in range(4):
+        t1 = time.time()
         annotation_name = '../CellLocatorAnnotations/annotation_%d.json' % dex
         img_name = tempfile.mkstemp(dir='.',
                                 prefix='annotation_%d_' % dex,
@@ -50,9 +52,8 @@ def do_analysis():
             annotation = json.load(in_file)
 
         coord_converter = cell_locator_utils.CellLocatorTransformation(annotation)
-
-
         slice_coords = coord_converter.allen_to_slice(allen_coords)
+        print('slice_coords after %e seconds' % (time.time()-t1))
 
         valid_dex = np.where(np.abs(slice_coords[2,:])<0.5*resolution)
 
@@ -75,9 +76,11 @@ def do_analysis():
                 pt_dex = ix*n_img_y+iy
                 new_img_pts[1, pt_dex] = (img_y_min+iy)*resolution
                 new_img_pts[0, pt_dex] = (img_x_min+ix)*resolution
+        print('dummy image after %e seconds' % (time.time()-t1))
 
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
         new_allen_dexes = np.round(new_allen_coords/resolution).astype(int)
+        print('allen dexes after %e seconds' % (time.time()-t1))
 
         valid_dex = np.where(np.logical_and(new_allen_dexes[0,:]>=0,
                          np.logical_and(new_allen_dexes[0,:]<nx0,
@@ -104,6 +107,8 @@ def do_analysis():
             new_img[ix,n_img_y-1-iy] = img_data[a_z, a_y, a_x]
 
         new_img = new_img.transpose()
+        print('got img data in %e seconds' % (time.time()-t1))
+
         plt.figure(figsize=(10,10))
         plt.imshow(new_img)
         plt.savefig(img_name)
