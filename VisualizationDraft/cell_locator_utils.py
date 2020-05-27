@@ -63,3 +63,13 @@ class CellLocatorTransformation(object):
         pts_4d[3,:] = 1.0
         pts_4d = np.dot(self._slice_to_a, pts_4d)
         return pts_4d[:3,:]
+
+    def get_slice_mask_from_allen(self, pts, resolution):
+        """
+        pts is a numpy array wth shape (3, N) where N is the number of points
+        """
+        pts_4d = np.zeros((4,pts.shape[1]), dtype=float)
+        pts_4d[:3,:] = pts
+        pts_4d[3,:] = 1.0
+        z_value = np.dot(self._a_to_slice[2,:], pts_4d)
+        return np.abs(z_value)<0.5*resolution

@@ -54,15 +54,16 @@ def do_analysis():
         coord_converter = cell_locator_utils.CellLocatorTransformation(annotation)
 
         t1 = time.time()
-        slice_coords = coord_converter.allen_to_slice(allen_coords)
-        print('slice_coords after %e seconds' % (time.time()-t1))
+        valid_dex = np.where(coord_converter.get_slice_mask_from_allen(allen_coords,
+                                                                       resolution))
+        print('valid_dex after %e seconds' % (time.time()-t1))
 
-        valid_dex = np.where(np.abs(slice_coords[2,:])<0.5*resolution)
+        slice_coords = coord_converter.allen_to_slice(allen_coords[:,valid_dex[0]])
 
-        img_x_min = slice_coords[0,valid_dex].min()
-        img_x_max = slice_coords[0,valid_dex].max()
-        img_y_min = slice_coords[1,valid_dex].min()
-        img_y_max = slice_coords[1,valid_dex].max()
+        img_x_min = slice_coords[0,:].min()
+        img_x_max = slice_coords[0,:].max()
+        img_y_min = slice_coords[1,:].min()
+        img_y_max = slice_coords[1,:].max()
 
         img_x_min = np.round(img_x_min/resolution).astype(int)
         img_x_max = np.round(img_x_max/resolution).astype(int)
