@@ -38,7 +38,7 @@ def do_analysis():
     allen_coords[1,:] = mesh.pop(1).flatten()
     allen_coords[0,:] = mesh.pop(0).flatten()
 
-    print('grid created in %e seconds' % (time.time()-t0))
+    print('grid created in %e seconds\n' % (time.time()-t0))
 
     for dex in range(4):
         t1 = time.time()
