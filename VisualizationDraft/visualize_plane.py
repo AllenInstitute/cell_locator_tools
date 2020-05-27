@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Qt5Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import argparse
@@ -37,9 +37,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--annotation', type=str, default=None)
+    parser.add_argument('--img_name', type=str, default=None)
     args = parser.parse_args()
     if not os.path.isfile(args.annotation):
         raise RuntimeError("%s is not a file" % args.annotation)
+
+    assert args.img_name is not None
 
     with open(args.annotation, 'rb') as in_file:
         annotation = json.load(in_file)
@@ -203,4 +206,4 @@ if __name__ == "__main__":
     new_img = new_img.transpose()
     plt.figure(figsize=(10,10))
     plt.imshow(new_img)
-    plt.show()
+    plt.savefig(args.img_name)
