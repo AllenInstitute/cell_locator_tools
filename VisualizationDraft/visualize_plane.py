@@ -120,6 +120,35 @@ if __name__ == "__main__":
         print('%d %d' % (np.round(imin/resolution).astype(int),
                          np.round(imax/resolution).astype(int)))
 
+    img_x_min = cell_locator_arr[0,valid_dex].min()
+    img_x_max = cell_locator_arr[0,valid_dex].max()
+    img_y_min = cell_locator_arr[1,valid_dex].min()
+    img_y_max = cell_locator_arr[1,valid_dex].max()
+
+    img_x_min = np.round(img_x_min/resolution).astype(int)
+    img_x_max = np.round(img_x_max/resolution).astype(int)
+    img_y_min = np.round(img_y_min/resolution).astype(int)
+    img_y_max = np.round(img_y_max/resolution).astype(int)
+
+    n_img_x = img_x_max-img_x_min+1
+    n_img_y = img_y_max-img_y_min+1
+
+    new_img = np.zeros((n_img_x, n_img_y), dtype=float)
+
+    new_img_pts = np.zeros((4, n_img_x*n_img_y), dtype=float)
+    for ix in range(n_img_x):
+        for iy in range(n_img_y):
+            pt_dex = ix*n_img_y+iy
+            new_img_pts[3, pt_dex] = 1.0
+            new_img_pts[2, pt_dex] = 0.0
+            new_img_pts[1, pt_dex] = iy*resolution
+            new_img_pts[0, pt_dex] = ix*resolution
+
+    new_img_pts = np.dot(transform, new_img_pts)
+    new_img_pts = np.dot(cell_to_allen_mat, new_img_pts)
+
+    print(np.unique(new_img_pts[3,:]))
+
     exit()
 
     pt = np.zeros(4,dtype=float)
