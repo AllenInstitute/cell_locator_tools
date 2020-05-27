@@ -71,11 +71,13 @@ def do_analysis():
         n_img_y = img_y_max-img_y_min+1
 
         new_img_pts = np.zeros((2, n_img_x*n_img_y), dtype=float)
-        for ix in range(n_img_x):
-            for iy in range(n_img_y):
-                pt_dex = ix*n_img_y+iy
-                new_img_pts[1, pt_dex] = (img_y_min+iy)*resolution
-                new_img_pts[0, pt_dex] = (img_x_min+ix)*resolution
+
+        mesh = np.meshgrid(resolution*(img_x_min+np.arange(n_img_x)),
+                           resolution*(img_y_min+np.arange(n_img_y)))
+
+        new_img_pts[1,:] = mesh.pop(1).flatten()
+        new_img_pts[0,:] = mesh.pop(0).flatten()
+
         print('dummy image after %e seconds' % (time.time()-t1))
 
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
