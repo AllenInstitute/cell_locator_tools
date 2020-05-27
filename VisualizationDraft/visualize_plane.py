@@ -8,6 +8,7 @@ import numpy as np
 import SimpleITK
 
 import json
+import time
 
 
 def allen_to_cell_locator(pt):
@@ -75,7 +76,51 @@ if __name__ == "__main__":
     px_min = None
     py_min = None
 
-    xyz_to_dex = {'x':0, 'y':2, 'z':1}
+    t0 = time.time()
+    nx0 = img_data.shape[2]
+    ny0 = img_data.shape[1]
+    nz0 = img_data.shape[0]
+    already_set = set()
+    pt_arr = np.zeros((4,nx0*ny0*nz0), dtype=float)
+    for ix in range(nx0):
+        for iy in range(ny0):
+            for iz in range(nz0):
+                pt_dex = ix*(ny0*nz0)+iy*(nz0)+iz
+                assert pt_dex not in already_set
+                already_set.add(pt_dex)
+                pt_arr[0,pt_dex] = ix*resolution
+                pt_arr[1,pt_dex] = iy*resolution
+                pt_arr[2,pt_dex] = iz*resolution
+                pt_arr[3,pt_dex] = 1.0
+    print('got raw grid in %e sec' % (time.time()-t0))
+
+    # convert to cell locator
+    cell_locator_arr = np.dot(allen_to_cell_mat, pt_arr)
+    print('converted to cell locator after %e sec' % (time.time()-t0))
+
+    # appy invers transform
+    cell_locator_arr = np.dot(inverse_transform, cell_locator_arr)
+    print('applied inverse_transform after %e sec' % (time.time()-t0))
+
+
+    valid_dex = np.where(np.abs(cell_locator_arr[2,:])<0.9*resolution)
+    valid_pts = pt_arr[:,valid_dex]
+    print('valid bounds')
+    for ii in range(3):
+        imin = valid_pts[ii,:].min()
+        imax = valid_pts[ii,:].max()
+        print('%d %d' % (np.round(imin/resolution).astype(int),
+                         np.round(imax/resolution).astype(int)))
+
+    print('')
+    print('in new img space')
+    for ii in range(2):
+        imin = cell_locator_arr[ii,valid_dex].min()
+        imax = cell_locator_arr[ii,valid_dex].max()
+        print('%d %d' % (np.round(imin/resolution).astype(int),
+                         np.round(imax/resolution).astype(int)))
+
+    exit()
 
     pt = np.zeros(4,dtype=float)
     allen_pt = np.zeros(3, dtype=float)
