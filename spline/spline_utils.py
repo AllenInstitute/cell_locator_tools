@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 
 class Spline2D(object):
@@ -71,6 +72,69 @@ class Spline2D(object):
             mat[irow, i_pt*4+3] = -6.0
 
         return mat, boundary_conditions
+
+
+class Annotation(object):
+
+    @property
+    def resolution(self):
+        return self._resolution
+
+    def __init__(self, x_vals, y_vals, resolution):
+        t0 = time.time()
+        self._spline = Spline2D(x_vals, y_vals)
+        self._resolution = resolution
+        border_x = []
+        border_y = []
+        n_segments = len(x_vals)
+        for i1 in range(n_segments):
+            if i1<n_segments-1:
+                i2 = i1+1
+            else:
+                i2 = 0
+            d_max = 10.0*resolution
+
+            # sample each curve at a fine enough resolution
+            # that we will get all of the border pixels
+            t = np.arange(0.0, 1.01, 0.01)
+            d_threshold = 0.25*self.resolution
+            while d_max>d_threshold:
+                xx, yy = self._spline.values(i1, t)
+                dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
+                d_max = dist.max()
+                if d_max>d_threshold:
+                   bad_dex = np.where(dist>d_threshold)
+                   new_t = t[bad_dex]+0.5*(t[bad_dex[0]+1]-t[bad_dex])
+                   t = np.sort(np.concatenate([t, new_t]))
+            # shave the value at t=0 because it is equivalent
+            # to next segment's t=0
+            border_x.append(xx[:-1])
+            border_y.append(yy[:-1])
+        border_x = np.concatenate(border_x)
+        border_y = np.concatenate(border_y)
+
+        # convert to integer pixel values
+        self._border_x_pixels = np.round(border_x/resolution).astype(int)
+        self._border_y_pixels = np.round(border_y/resolution).astype(int)
+        #print(len(self._border_x_pixels))
+
+        # cull pixels that are identical to their neighbor
+        n_border = len(self._border_x_pixels)
+        d_pixel = np.ones(n_border)  # so that we keep the [-1] pixel
+        d_pixel[:-1] = np.sqrt((self._border_x_pixels[:-1]-self._border_x_pixels[1:])**2 +
+                          (self._border_y_pixels[:-1]-self._border_y_pixels[1:])**2)
+
+        #print(np.unique(d_pixel,return_counts=True))
+
+        valid = np.where(d_pixel>1.0e-6)
+        self._border_x_pixels = self._border_x_pixels[valid]
+        self._border_y_pixels = self._border_y_pixels[valid]
+        #print(len(self._border_x_pixels))
+        #print(self._border_x_pixels.dtype)
+        #print(self._border_y_pixels.dtype)
+
+        print('%e seconds' % (time.time()-t0))
+
 
 
 if __name__ == "__main__":
