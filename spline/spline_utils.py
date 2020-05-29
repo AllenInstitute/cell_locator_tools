@@ -4,26 +4,37 @@ import time
 
 class Spline2D(object):
 
+    @property
+    def x(self):
+        return self._x_vals
+
+    @property
+    def y(self):
+        return self._y_vals
+
+
     def __init__(self, x_vals, y_vals):
-        self._x = self._get_coefficients(x_vals)
-        self._y = self._get_coefficients(y_vals)
+        self._x_vals = np.copy(x_vals)
+        self._y_vals = np.copy(y_vals)
+        self._x_coeffs = self._get_coefficients(x_vals)
+        self._y_coeffs = self._get_coefficients(y_vals)
 
     def values(self, ii, t):
         t2 = t**2
         t3 = t**3
-        v_x = self._x[ii, 0] + self._x[ii, 1]*t + self._x[ii, 2]*t2 + self._x[ii, 3]*t3
-        v_y = self._y[ii, 0] + self._y[ii, 1]*t + self._y[ii, 2]*t2 + self._y[ii, 3]*t3
+        v_x = self._x_coeffs[ii, 0] + self._x_coeffs[ii, 1]*t + self._x_coeffs[ii, 2]*t2 + self._x_coeffs[ii, 3]*t3
+        v_y = self._y_coeffs[ii, 0] + self._y_coeffs[ii, 1]*t + self._y_coeffs[ii, 2]*t2 + self._y_coeffs[ii, 3]*t3
         return (v_x, v_y)
 
     def derivatives(self, ii, t):
         t2 = t**2
-        vp_x = self._x[ii, 1] + 2*self._x[ii, 2]*t + 3*self._x[ii, 3]*t2
-        vp_y = self._y[ii, 1] + 2*self._y[ii, 2]*t + 3*self._y[ii, 3]*t2
+        vp_x = self._x_coeffs[ii, 1] + 2*self._x_coeffs[ii, 2]*t + 3*self._x_coeffs[ii, 3]*t2
+        vp_y = self._y_coeffs[ii, 1] + 2*self._y_coeffs[ii, 2]*t + 3*self._y_coeffs[ii, 3]*t2
         return (vp_x, vp_y)
 
     def second_derivatives(self, ii, t):
-        vpp_x = 2*self._x[ii, 2] + 6*self._x[ii, 3]*t
-        vpp_y = 2*self._y[ii, 2] + 6*self._y[ii, 3]*t
+        vpp_x = 2*self._x_coeffs[ii, 2] + 6*self._x_coeffs[ii, 3]*t
+        vpp_y = 2*self._y_coeffs[ii, 2] + 6*self._y_coeffs[ii, 3]*t
         return (vpp_x, vpp_y)
 
     def _get_coefficients(self, ordered_vals):
