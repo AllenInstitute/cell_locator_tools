@@ -242,34 +242,24 @@ class Annotation(object):
 
         if len(interesting_row)>0:
             mask[iy, interesting_row] = True
-            self.t_mask[iy, interesting_row] += self._as_row
 
         if len(interesting_col)>0:
             mask[interesting_col, ix] = True
-            self.t_mask[interesting_col, ix] += self._as_col
 
         for ix_int in interesting_row:
-            if ix_int < mask.shape[0]:
-                self._interesting_ix.append((ix_int, iy))
+            self._interesting_ixiy.append((ix_int, iy))
         for iy_int in interesting_col:
-            if iy_int < mask.shape[1]:
-                self._interesting_iy.append((ix, iy_int))
+            self._interesting_ixiy.append((ix, iy_int))
 
         return None
 
 
     def get_mask(self):
 
-        self._as_center = 1
-        self._as_row = 2
-        self._as_col= 4
-
         t0 = time.time()
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
-        self.t_mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=int)
 
-        self._interesting_ix = []
-        self._interesting_iy = []
+        self._interesting_ixiy = []
 
         #centroid_x = np.round(self._spline.x.sum()/(len(self._spline.x)*self.resolution)).astype(int)
         #centroid_y = np.round(self._spline.y.sum()/(len(self._spline.y)*self.resolution)).astype(int)
@@ -300,22 +290,13 @@ class Annotation(object):
         n_scans = 1
         self._scan_mask(cx, cy, mask)
         while True:
-            if len(self._interesting_ix) == 0 and len(self._interesting_iy)==0:
+            if len(self._interesting_ixiy) == 0:
                 break
-            if len(self._interesting_ix)>0:
-                p = self._interesting_ix.pop(0)
-                if self.t_mask[p[0],p[1]] & self._as_row == 0:
-                    n_scans += 1
-                    self._scan_mask(p[0],p[1],mask)
-            if len(self._interesting_iy)>0:
-                p = self._interesting_iy.pop(0)
-                if self.t_mask[p[0], p[1]] & self._as_col == 0:
-                    n_scans += 1
-                    self._scan_mask(p[0], p[1], mask)
+            p = self._interesting_ixiy.pop(0)
+            n_scans += 1
+            self._scan_mask(p[0],p[1],mask)
 
-        print('got mask in %e seconds -- %e (n_scans %d of %d)' %
-        (time.time()-t0, mask.sum(), n_scans, mask.shape[0]*mask.shape[1]))
-        print('%d by_y %d by_x' % (len(self._by_y_lookup), len(self._by_x_lookup)))
+        print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), n_scans))
         return mask
 
 
