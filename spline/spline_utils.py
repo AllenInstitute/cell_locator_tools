@@ -269,10 +269,10 @@ class Annotation(object):
         for ix, iy in zip(self._border_x_pixels_by_x, self._border_x_pixels_by_y):
             for d in ((10,0), (-10,0), (0,10), (0, -10)):
                 r, c = self._get_cross(ix+d[0], iy+d[1], mask)
-                if len(r)>3:
+                if len(r)>3 and len(c)>0:
                     cx = r[len(r)//2]
                     cy = iy
-                elif len(c)>3:
+                elif len(c)>3 and len(r)>0:
                     cx = ix
                     cy = c[len(c)//2]
 
@@ -284,15 +284,19 @@ class Annotation(object):
 
         self._cx = cx
         self._cy = cy
+        #print(r)
+        #print(c)
 
+        n_scans = 1
         self._scan_mask(cx, cy, mask)
         while True:
             if len(self._interesting_ixiy) == 0:
                 break
             p = self._interesting_ixiy.pop(0)
+            n_scans += 1
             self._scan_mask(p[0],p[1],mask)
 
-        print('got mask in %e seconds -- %e' % (time.time()-t0, mask.sum()))
+        print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), n_scans))
         return mask
 
 
