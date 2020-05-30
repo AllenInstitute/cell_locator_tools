@@ -92,15 +92,15 @@ def draw_shape(xx, yy, out_name, n_t=100):
 
 if __name__ == "__main__":
 
-    #xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])+5
-    #yy = np.array([4,5,8,5,4,3,1,3])
-    #draw_shape(xx, yy, 'star.pdf')
+    xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])+5
+    yy = np.array([4,5,8,5,4,3,1,3])
+    draw_shape(xx, yy, 'star.pdf')
 
     xx = np.array([2,7,3,4,5,11,7,6])
     yy = np.array([3,6,9,10,10,4,4,1])
     assert len(xx) == len(yy)
     draw_shape(xx, yy, 'snake.pdf')
 
-    #xx = np.array([1,5,5,7,7,1])+5
-    #yy = np.array([1,1,7,7,0,0])+5
-    #draw_shape(xx,yy,'ell.pdf')
+    xx = np.array([1,5,5,7,7,1])+5
+    yy = np.array([1,1,7,7,0,0])+5
+    draw_shape(xx,yy,'ell.pdf')
