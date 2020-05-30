@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from spline_utils import Spline2D
+from spline_utils import Spline2D, Annotation
 
 import numpy as np
 
@@ -33,14 +33,15 @@ def draw_shape(xx, yy, out_name, n_t=100):
     plt.subplot(2,2,1)
     plt.plot(x_s, y_s, c='b', zorder=1)
     plt.scatter(xx, yy, c='r', zorder=2, alpha=0.4)
-    _xlim = plt.xlim()
-    _ylim = plt.ylim()
+
+    resolution = 15.0/1000.0
+    plt.xlim(0,15)
+    plt.ylim(0,15)
 
     def scale_x(x_v):
-        return (x_v-_xlim[0])*1000/(_xlim[1]-_xlim[0])
+        return x_v/resolution
     def scale_y(y_v):
-        return (y_v-_ylim[0])*1000/(_ylim[1]-_ylim[0])
-
+        return y_v/resolution
 
     plt.subplot(2,2,2)
     img = np.zeros((1000,1000), dtype=float)
@@ -48,11 +49,45 @@ def draw_shape(xx, yy, out_name, n_t=100):
     plt.plot(scale_x(x_s), scale_y(y_s), color='b', zorder=2)
     plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
 
+    plt.subplot(2,2,3)
+    ann = Annotation(xx, yy, resolution)
+    plt.scatter(ann._border_x_pixels_by_x, ann._border_y_pixels_by_x)
+
+    cx = -ann._x_min+ann._spline.x.sum()/(len(ann._spline.x)*resolution)
+    cy = -ann._y_min+ann._spline.y.sum()/(len(ann._spline.y)*resolution)
+
+    plt.scatter([cx], [cy], color='r')
+    plt.scatter(-ann._x_min+ann._spline.x/ann.resolution,
+                -ann._y_min+ann._spline.y/ann.resolution,
+                c='c')
+
+    mask = ann.get_mask()
+
+    dx = min(mask.shape[1], img.shape[1]-ann._x_min)
+    dy = min(mask.shape[0], img.shape[0]-ann._y_min)
+
+    print('before ',img.sum())
+
+    img[ann._y_min:ann._y_min+dy,
+        ann._x_min:ann._x_min+dx] = mask
+    print('after ',img.sum())
+    plt.subplot(2,2,4)
+    plt.imshow(img, zorder=1, cmap='gray')
+    plt.plot(scale_x(x_s), scale_y(y_s), color='b', zorder=2, alpha=0.2)
+    plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
     plt.savefig(out_name)
+
+    exit()
+    #print(mask.sum())
+    #print(ann._x_min,ann._y_min)
+
+    #print(mask.shape[0]*mask.shape[1])
+    #exit()
+
 
 if __name__ == "__main__":
 
-    xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])
+    xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])+5
     yy = np.array([4,5,8,5,4,3,1,3])
     draw_shape(xx, yy, 'star.pdf')
 
@@ -61,6 +96,6 @@ if __name__ == "__main__":
     assert len(xx) == len(yy)
     draw_shape(xx, yy, 'snake.pdf')
 
-    xx = np.array([1,5,5,7,7,1])
-    yy = np.array([1,1,7,7,0,0])
+    xx = np.array([1,5,5,7,7,1])+5
+    yy = np.array([1,1,7,7,0,0])+5
     draw_shape(xx,yy,'ell.pdf')

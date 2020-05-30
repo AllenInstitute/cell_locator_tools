@@ -129,6 +129,21 @@ class Annotation(object):
         self._border_y_pixels = np.round(border_y/resolution).astype(int)
         #print(len(self._border_x_pixels))
 
+        x_min = self._border_x_pixels.min()
+        y_min = self._border_y_pixels.min()
+        x_max = self._border_x_pixels.max()
+        y_max = self._border_y_pixels.max()
+
+        self._border_x_pixels -= x_min
+        self._border_y_pixels -= y_min
+        self._n_x_pixels = x_max-x_min+1
+        self._n_y_pixels = y_max-y_min+1
+
+        self._x_min = x_min
+        self._x_max = x_max
+        self._y_min = y_min
+        self._y_max = y_max
+
         # cull pixels that are identical to their neighbor
         n_border = len(self._border_x_pixels)
         d_pixel = np.ones(n_border)  # so that we keep the [-1] pixel
@@ -144,8 +159,80 @@ class Annotation(object):
         #print(self._border_x_pixels.dtype)
         #print(self._border_y_pixels.dtype)
 
+        sorted_dex = np.argsort(self._border_x_pixels)
+        self._border_x_pixels_by_x = self._border_x_pixels[sorted_dex]
+        self._border_y_pixels_by_x = self._border_y_pixels[sorted_dex]
+        self._by_x_lookup = {}
+        for ix in np.unique(self._border_x_pixels_by_x):
+            valid = np.where(self._border_x_pixels_by_x==ix)
+            self._by_x_lookup[ix] = (valid[0].min(), valid[0].max()+1)
+
+        sorted_dex = np.argsort(self._border_y_pixels)
+        self._border_x_pixels_by_y = self._border_x_pixels[sorted_dex]
+        self._border_y_pixels_by_y = self._border_y_pixels[sorted_dex]
+        self._by_y_lookup = {}
+        for iy in np.unique(self._border_y_pixels_by_y):
+            valid = np.where(self._border_y_pixels_by_y==iy)
+            self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
+
         print('%e seconds' % (time.time()-t0))
 
+    def _scan_mask(self, ix, iy, mask):
+        this_row = self._by_y_lookup[iy]
+        this_row_x = self._border_x_pixels_by_y[this_row[0]:this_row[1]]
+
+        left_side = this_row_x[np.where(this_row_x<=ix)].max()
+        right_side = this_row_x[np.where(this_row_x>=ix)].min()
+
+        interesting_row = np.arange(left_side, right_side).astype(int)
+        interesting_row = interesting_row[np.where(np.logical_not(mask[iy, left_side:right_side]))]
+        mask[iy, interesting_row] = True
+
+        this_col = self._by_x_lookup[ix]
+        this_col_y = self._border_y_pixels_by_x[this_col[0]:this_col[1]]
+        top_side = this_col_y[np.where(this_col_y>=iy)].min()
+        bottom_side = this_col_y[np.where(this_col_y<=iy)].max()
+
+        interesting_col = np.arange(bottom_side, top_side, 1).astype(int)
+        interesting_col = interesting_col[np.where(np.logical_not(mask[bottom_side:top_side, ix]))]
+        mask[interesting_col, ix] = True
+
+
+        #print(interesting_row,left_side,right_side)
+        #print(interesting_col,top_side, bottom_side)
+
+
+        del this_row_x
+        del this_col_y
+        del this_row
+        del this_col
+        del left_side
+        del right_side
+        del top_side
+        del bottom_side
+
+        for ix_int in interesting_row:
+            self._scan_mask(ix_int, iy, mask)
+
+        del interesting_row
+
+        for iy_int in interesting_col:
+            self._scan_mask(ix, iy_int, mask)
+
+        del interesting_col
+
+        return None
+
+
+    def get_mask(self):
+        t0 = time.time()
+        mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
+
+        centroid_x = np.round(self._spline.x.sum()/(len(self._spline.x)*self.resolution)).astype(int)
+        centroid_y = np.round(self._spline.y.sum()/(len(self._spline.y)*self.resolution)).astype(int)
+        self._scan_mask(centroid_x-self._x_min, centroid_y-self._y_min, mask)
+        print('got mask in %e seconds' % (time.time()-t0))
+        return mask
 
 
 if __name__ == "__main__":
