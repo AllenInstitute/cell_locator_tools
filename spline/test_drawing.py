@@ -104,3 +104,17 @@ if __name__ == "__main__":
     xx = np.array([1,5,5,7,7,1])+5
     yy = np.array([1,1,7,7,0,0])+5
     draw_shape(xx,yy,'ell.pdf')
+
+    xx = np.array([1,3,6,7,8,9,7,5,4,3])
+    yy = np.array([2,6,6,2,4,3,1,3,4,2])
+    draw_shape(xx,yy,'tilde.pdf')
+
+    pts = [(2,2),(1,5),(3,7),(6,7),(8,6),
+           (7,2), (6,3), (7,5), (6,6),
+           (4,6), (3,4), (3,3)]
+    xx = np.zeros(len(pts), dtype=float)
+    yy = np.zeros(len(pts), dtype=float)
+    for ii in range(len(pts)):
+        xx[ii] =pts[ii][0]
+        yy[ii] = pts[ii][1]
+    draw_shape(xx,yy,'horseshoe.pdf')
