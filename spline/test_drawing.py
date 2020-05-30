@@ -56,6 +56,8 @@ def draw_shape(xx, yy, out_name, n_t=100):
     cx = -ann._x_min+ann._spline.x.sum()/(len(ann._spline.x)*resolution)
     cy = -ann._y_min+ann._spline.y.sum()/(len(ann._spline.y)*resolution)
 
+    #cx, cy = ann.get_mask()
+
     plt.scatter([cx], [cy], color='r')
     plt.scatter(-ann._x_min+ann._spline.x/ann.resolution,
                 -ann._y_min+ann._spline.y/ann.resolution,
@@ -73,11 +75,14 @@ def draw_shape(xx, yy, out_name, n_t=100):
     print('after ',img.sum())
     plt.subplot(2,2,4)
     plt.imshow(img, zorder=1, cmap='gray')
-    plt.plot(scale_x(x_s), scale_y(y_s), color='b', zorder=2, alpha=0.2)
+    plt.plot(scale_x(x_s), scale_y(y_s), color='c', zorder=2, alpha=0.2)
     plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
+    plt.scatter(ann._cx+ann._x_min, ann._cy+ann._y_min, zorder=4, color='g')
+    print('saving %s' % out_name)
+    print(mask.sum())
     plt.savefig(out_name)
 
-    exit()
+    #exit()
     #print(mask.sum())
     #print(ann._x_min,ann._y_min)
 
@@ -87,15 +92,15 @@ def draw_shape(xx, yy, out_name, n_t=100):
 
 if __name__ == "__main__":
 
-    xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])+5
-    yy = np.array([4,5,8,5,4,3,1,3])
-    draw_shape(xx, yy, 'star.pdf')
+    #xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])+5
+    #yy = np.array([4,5,8,5,4,3,1,3])
+    #draw_shape(xx, yy, 'star.pdf')
 
     xx = np.array([2,7,3,4,5,11,7,6])
     yy = np.array([3,6,9,10,10,4,4,1])
     assert len(xx) == len(yy)
     draw_shape(xx, yy, 'snake.pdf')
 
-    xx = np.array([1,5,5,7,7,1])+5
-    yy = np.array([1,1,7,7,0,0])+5
-    draw_shape(xx,yy,'ell.pdf')
+    #xx = np.array([1,5,5,7,7,1])+5
+    #yy = np.array([1,1,7,7,0,0])+5
+    #draw_shape(xx,yy,'ell.pdf')

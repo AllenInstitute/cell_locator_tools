@@ -179,59 +179,138 @@ class Annotation(object):
 
     def _get_cross(self, ix, iy, mask):
 
+        if iy not in self._by_y_lookup or ix not in self._by_x_lookup:
+            return np.array([]), np.array([])
+
         this_row = self._by_y_lookup[iy]
         this_row_x = self._border_x_pixels_by_y[this_row[0]:this_row[1]]
 
-        left_side = this_row_x[np.where(this_row_x<=ix)].max()
-        right_side = this_row_x[np.where(this_row_x>=ix)].min()
+        valid_row = True
+        if len(this_row_x) > 0:
+            left_side = this_row_x[np.where(this_row_x<=ix)]
+            if len(left_side)>0:
+                left_side = left_side.max()
+            else:
+                valid_row = False
 
-        interesting_row = np.arange(left_side, right_side).astype(int)
-        interesting_row = interesting_row[np.where(np.logical_not(mask[iy, left_side:right_side]))]
+            right_side = this_row_x[np.where(this_row_x>=ix)]
+            if len(right_side)>0:
+                right_side = right_side.min()
+            else:
+                valid_row = False
+        else:
+            valid_row = False
+
+        if valid_row:
+            interesting_row = np.arange(left_side, right_side).astype(int)
+            interesting_row = interesting_row[np.where(np.logical_not(mask[iy, left_side:right_side]))]
+        else:
+            interesting_row = np.array([]).astype(int)
 
         this_col = self._by_x_lookup[ix]
         this_col_y = self._border_y_pixels_by_x[this_col[0]:this_col[1]]
-        top_side = this_col_y[np.where(this_col_y>=iy)].min()
-        bottom_side = this_col_y[np.where(this_col_y<=iy)].max()
 
-        interesting_col = np.arange(bottom_side, top_side, 1).astype(int)
-        interesting_col = interesting_col[np.where(np.logical_not(mask[bottom_side:top_side, ix]))]
+        valid_col = True
+        if len(this_col_y)>0:
+            top_side = this_col_y[np.where(this_col_y>=iy)]
+            if len(top_side)>0:
+                top_side = top_side.min()
+            else:
+                valid_col = False
+
+            bottom_side = this_col_y[np.where(this_col_y<=iy)]
+            if len(bottom_side)>0:
+                bottom_side = bottom_side.max()
+            else:
+                valid_col = False
+        else:
+            valid_col = False
+
+        if valid_col:
+            interesting_col = np.arange(bottom_side, top_side, 1).astype(int)
+            interesting_col = interesting_col[np.where(np.logical_not(mask[bottom_side:top_side, ix]))]
+        else:
+            interesting_col = np.array([]).astype(int)
 
         return interesting_row, interesting_col
 
 
     def _scan_mask(self, ix, iy, mask):
-
+        self._mask_ct += 1
+        if self._mask_ct>self._mask_max:
+            return None
+        print(ix,iy)
         (interesting_row,
          interesting_col) = self._get_cross(ix, iy, mask)
 
-        mask[iy, interesting_row] = True
-        mask[interesting_col, ix] = True
+        #print(interesting_row)
+        #print(interesting_row.dtype)
+        #print(interesting_col)
+        #print(interesting_col.dtype)
 
+        if len(interesting_row)>0:
+            mask[iy, interesting_row] = True
 
-        #print(interesting_row,left_side,right_side)
-        #print(interesting_col,top_side, bottom_side)
+        if len(interesting_col)>0:
+            mask[interesting_col, ix] = True
 
         for ix_int in interesting_row:
             self._scan_mask(ix_int, iy, mask)
+            if self._mask_ct>self._mask_max:
+                break
 
+        #print('del row %d' % len(interesting_row))
         del interesting_row
 
         for iy_int in interesting_col:
             self._scan_mask(ix, iy_int, mask)
+            if self._mask_ct >self._mask_max:
+                break
 
+        if len(interesting_col)>0:
+            print('del col %d %d %d' % (interesting_col.min(),iy,interesting_col.max()))
         del interesting_col
 
         return None
 
 
     def get_mask(self):
+        self._mask_ct = 0
+        self._mask_max = 1000
         t0 = time.time()
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
-        centroid_x = np.round(self._spline.x.sum()/(len(self._spline.x)*self.resolution)).astype(int)
-        centroid_y = np.round(self._spline.y.sum()/(len(self._spline.y)*self.resolution)).astype(int)
-        self._scan_mask(centroid_x-self._x_min, centroid_y-self._y_min, mask)
-        print('got mask in %e seconds' % (time.time()-t0))
+        #centroid_x = np.round(self._spline.x.sum()/(len(self._spline.x)*self.resolution)).astype(int)
+        #centroid_y = np.round(self._spline.y.sum()/(len(self._spline.y)*self.resolution)).astype(int)
+
+        cx = None
+        cy = None
+        for ix, iy in zip(self._border_x_pixels_by_x, self._border_x_pixels_by_y):
+            for d in ((10,0), (-10,0), (0,10), (0, -10)):
+                r, c = self._get_cross(ix+d[0], iy+d[1], mask)
+                if len(r)>3:
+                    cx = r[len(r)//2]
+                    cy = iy
+                elif len(c)>3:
+                    cx = ix
+                    cy = c[len(c)//2]
+
+                if cx is not None:
+                    break
+
+            if cx is not None:
+                break
+
+        print('cx ',cx)
+        print('cy ',cy)
+        #return cx, cy
+        self._cx = cx
+        self._cy = cy
+        print(r)
+        print(c)
+
+        self._scan_mask(cx, cy, mask)
+        print('got mask in %e seconds -- %e' % (time.time()-t0, mask.sum()))
         return mask
 
 
