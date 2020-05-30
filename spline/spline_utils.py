@@ -236,6 +236,7 @@ class Annotation(object):
 
 
     def _scan_mask(self, ix, iy, mask):
+        self.n_scans += 1
 
         (interesting_row,
          interesting_col) = self._get_cross(ix, iy, mask)
@@ -247,11 +248,34 @@ class Annotation(object):
             mask[interesting_col, ix] = True
 
         for ix_int in interesting_row:
-            self._interesting_ixiy.append((ix_int, iy))
+            self._interesting_ix.append((ix_int, iy))
         for iy_int in interesting_col:
-            self._interesting_ixiy.append((ix, iy_int))
+            self._interesting_iy.append((ix, iy_int))
 
         return None
+
+    def _clean_list(self, raw_pts, axis):
+        pts = np.zeros((len(raw_pts), 2), dtype=int)
+        for ii, pp in enumerate(raw_pts):
+            pts[ii,0] = pp[0]
+            pts[ii,1] = pp[1]
+
+        sorted_dex = np.argsort(pts[:,axis])
+        pts = pts[sorted_dex,:]
+
+        out_pts = []
+        for v in np.unique(pts[:,axis]):
+            valid = np.where(pts[:,axis]==v)[0]
+            valid_pts = pts[valid,:]
+            sorted_dex = np.argsort(valid_pts[:,1-axis])
+            valid_pts = valid_pts[sorted_dex,:]
+            d = np.diff(valid_pts[:,1-axis])
+            to_keep = np.where(d>1)[0]
+            for ii in to_keep:
+                out_pts.append(valid_pts[ii,:])
+            out_pts.append(valid_pts[-1,:])
+
+        return out_pts
 
 
     def get_mask(self):
@@ -259,7 +283,8 @@ class Annotation(object):
         t0 = time.time()
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
-        self._interesting_ixiy = []
+        self._interesting_ix = []
+        self._interesting_iy = []
 
         #centroid_x = np.round(self._spline.x.sum()/(len(self._spline.x)*self.resolution)).astype(int)
         #centroid_y = np.round(self._spline.y.sum()/(len(self._spline.y)*self.resolution)).astype(int)
@@ -287,16 +312,24 @@ class Annotation(object):
         #print(r)
         #print(c)
 
-        n_scans = 1
+        self.n_scans = 1
         self._scan_mask(cx, cy, mask)
         while True:
-            if len(self._interesting_ixiy) == 0:
+            if len(self._interesting_ix) == 0 and len(self._interesting_iy)==0:
                 break
-            p = self._interesting_ixiy.pop(0)
-            n_scans += 1
-            self._scan_mask(p[0],p[1],mask)
+            if len(self._interesting_ix)>0:
+                for ii in range(len(self._interesting_ix)-1,-1,-1):
+                    p = self._interesting_ix.pop(ii)
+                    self._scan_mask(p[0], p[1], mask)
+                self._interesting_iy = self._clean_list(self._interesting_iy, 1)
 
-        print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), n_scans))
+            if len(self._interesting_iy)>0:
+                for ii in range(len(self._interesting_iy)-1,-1,-1):
+                    p = self._interesting_iy.pop(ii)
+                    self._scan_mask(p[0], p[1], mask)
+                self._interesting_ix = self._clean_list(self._interesting_ix, 0)
+
+        print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
 
 
