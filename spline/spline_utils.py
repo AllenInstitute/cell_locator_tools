@@ -177,7 +177,8 @@ class Annotation(object):
 
         print('%e seconds' % (time.time()-t0))
 
-    def _scan_mask(self, ix, iy, mask):
+    def _get_cross(self, ix, iy, mask):
+
         this_row = self._by_y_lookup[iy]
         this_row_x = self._border_x_pixels_by_y[this_row[0]:this_row[1]]
 
@@ -186,7 +187,6 @@ class Annotation(object):
 
         interesting_row = np.arange(left_side, right_side).astype(int)
         interesting_row = interesting_row[np.where(np.logical_not(mask[iy, left_side:right_side]))]
-        mask[iy, interesting_row] = True
 
         this_col = self._by_x_lookup[ix]
         this_col_y = self._border_y_pixels_by_x[this_col[0]:this_col[1]]
@@ -195,21 +195,21 @@ class Annotation(object):
 
         interesting_col = np.arange(bottom_side, top_side, 1).astype(int)
         interesting_col = interesting_col[np.where(np.logical_not(mask[bottom_side:top_side, ix]))]
+
+        return interesting_row, interesting_col
+
+
+    def _scan_mask(self, ix, iy, mask):
+
+        (interesting_row,
+         interesting_col) = self._get_cross(ix, iy, mask)
+
+        mask[iy, interesting_row] = True
         mask[interesting_col, ix] = True
 
 
         #print(interesting_row,left_side,right_side)
         #print(interesting_col,top_side, bottom_side)
-
-
-        del this_row_x
-        del this_col_y
-        del this_row
-        del this_col
-        del left_side
-        del right_side
-        del top_side
-        del bottom_side
 
         for ix_int in interesting_row:
             self._scan_mask(ix_int, iy, mask)
