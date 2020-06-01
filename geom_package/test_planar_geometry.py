@@ -147,6 +147,23 @@ class TestVector(unittest.TestCase):
             np.testing.assert_allclose(test, ww,
                                        atol=1.0e-10, rtol=1.0e-10)
 
+        # test edge cases (i.e. rotating into/out of the axes)
+        xhat = np.array([1.0,0.0])
+        yhat = np.array([0.0,1.0])
+        uu = np.array([3.4, -1.0])
+
+        pairs = ((xhat, yhat),
+                 (xhat, uu),
+                 (yhat, uu))
+        for vector_p in pairs:
+            for vv, ww in zip((vector_p[0], vector_p[1]),
+                              (vector_p[1], vector_p[0])):
+                vnorm = np.sqrt(np.sum(vv**2))
+                wnorm = np.sqrt(np.sum(ww**2))
+                mm = planar_geometry.rotate_v_into_w_2d(vv, ww)
+                test = np.dot(mm, vv)
+                d = np.dot(test, ww)
+                self.assertAlmostEqual(d, vnorm*wnorm, delta=1.0e-10*d)
 
     def test_rotating_3d_vectors(self):
         rng = np.random.RandomState(61243)
