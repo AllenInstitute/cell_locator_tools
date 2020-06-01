@@ -1,10 +1,17 @@
 import os
+import sys
+
+this_dir = os.environ['PWD']
+mod_dir = this_dir.replace('VisualizationDraft', 'geom_package')
+sys.path.append(mod_dir)
+
+import planar_geometry
 import numpy as np
 import json
 
 class CellLocatorTransformation(object):
 
-    def __init__(self, annotation):
+    def __init__(self, annotation, use_points=False):
         """
         annotation is a dict containing the annotation
         """
@@ -25,7 +32,10 @@ class CellLocatorTransformation(object):
                                                [1.0, 0.0, 0.0, 0.0],
                                                [0.0, 0.0, 0.0, 1.0]])
 
-        self._slice_to_c = self.slice_to_c_from_orientation(annotation)
+        if use_points:
+            self._slice_to_c = self.slice_to_c_from_points(annotation)
+        else:
+            self._slice_to_c = self.slice_to_c_from_orientation(annotation)
 
         self._c_to_slice = np.linalg.inv(self._slice_to_c)
         self._a_to_slice = np.dot(self._c_to_slice,
@@ -51,6 +61,22 @@ class CellLocatorTransformation(object):
         for irow in range(4):
             for icol in range(4):
                 slice_to_c[irow, icol] = orientation[irow*4+icol]
+        return slice_to_c
+
+    def slice_to_c_from_points(self, markup):
+        pts = []
+        for obj in markup['Points']:
+            pts.append(np.array([obj['x'], obj['y'], obj['z']]))
+        slice_plane = planar_geometry.Plane.plane_from_many_points(pts)
+        z_to_norm = planar_geometry.rotate_v_into_w_3d(np.array([0.0, 0.0, 1.0]),
+                                                       slice_plane.normal)
+
+        slice_to_c = np.zeros((4,4), dtype=float)
+        slice_to_c[:3, :3] = z_to_norm
+        slice_to_c[3,3] = 1.0
+        rotation_dot_origin = np.dot(z_to_norm, slice_plane.origin)
+        for ii in range(3):
+            slice_to_c[ii, 3] += slice_plane.origin[ii]
         return slice_to_c
 
     def allen_to_slice(self, pts):
@@ -182,12 +208,15 @@ class BrainImage(object):
         return img_dex_flat, new_img_dex_flat, n_img_cols, n_img_rows
 
 
-    def slice_img_from_annotation(self, annotation_fname):
+    def slice_img_from_annotation(self, annotation_fname, from_pts=False):
 
         with open(annotation_fname, 'rb') as in_file:
             annotation = json.load(in_file)
+        if from_pts:
+            annotation = annotation['Markups'][0]
 
-        coord_converter = CellLocatorTransformation(annotation)
+
+        coord_converter = CellLocatorTransformation(annotation, use_points=from_pts)
         (img_dex_flat,
          new_img_dex_flat,
                   n_img_cols,
