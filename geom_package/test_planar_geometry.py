@@ -132,9 +132,10 @@ class TestVector(unittest.TestCase):
             vv = 0.5-rng.random_sample(2)
             ww = 0.5-rng.random_sample(2)
             mm = planar_geometry.rotate_v_into_w_2d(vv, ww)
-            test = np.dot(mm, vv/np.sqrt(np.sum(vv**2)))
-            np.testing.assert_allclose(test, ww/np.sqrt(np.sum(ww**2)),
-                                       atol=1.0e-10, rtol=1.0e-10)
+            test = np.dot(mm, vv)
+            d = np.dot(test, ww)
+            self.assertAlmostEqual(d, np.sqrt(np.sum(vv**2)*np.sum(ww**2)),
+                                   delta=np.abs(d)*1.0e-10)
 
         for ii in range(100):
             vv = 0.5-rng.random_sample(2)
