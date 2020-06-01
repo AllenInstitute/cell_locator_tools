@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import planar_geometry
 
-class TestV(unittest.TestCase):
+class TestVector(unittest.TestCase):
 
     def test_cross(self):
         v1 = np.array([1,2.4,3.2])
@@ -110,8 +110,34 @@ class TestV(unittest.TestCase):
         self.assertEqual(v2[0], -np.sin(np.radians(ang)))
         self.assertEqual(v2[1], np.cos(np.radians(ang)))
 
+    def test_rotating_2d_vectors(self):
+        vv = np.array([0.0, 1.0])
+        ww = np.array([-0.2, np.sqrt(1.0-0.04)])
+        mm = planar_geometry.rotate_v_into_w_2d(vv, ww)
+        test = np.dot(mm, vv)
+        np.testing.assert_allclose(test, ww,
+                                   atol=1.0e-10, rtol=1.0e-10)
 
-class TestP(unittest.TestCase):
+        vv = np.array([1.0, 0.0])
+        ww = np.array([0.72, -np.sqrt(1.0-0.72**2)])
+        ww /= np.sqrt(np.sum(ww**2))
+        self.assertGreater(np.abs(1.0-np.dot(vv,ww)), 0.1)
+        mm = planar_geometry.rotate_v_into_w_2d(vv, ww)
+        test = np.dot(mm, vv)
+        np.testing.assert_allclose(test, ww,
+                                   atol=1.0e-10, rtol=1.0e-10)
+
+        rng = np.random.RandomState(8812)
+        for ii in range(100):
+            vv = 0.5-rng.random_sample(2)
+            ww = 0.5-rng.random_sample(2)
+            mm = planar_geometry.rotate_v_into_w_2d(vv, ww)
+            test = np.dot(mm, vv/np.sqrt(np.sum(vv**2)))
+            np.testing.assert_allclose(test, ww/np.sqrt(np.sum(ww**2)),
+                                       atol=1.0e-10, rtol=1.0e-10)
+
+
+class TestPlane(unittest.TestCase):
 
     def test_plane_from_points(self):
         rng = np.random.RandomState(88)
