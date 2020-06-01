@@ -100,12 +100,18 @@ class BrainImage(object):
         self.allen_coords[0,:] = mesh.pop(0).flatten()
         self.resolution = resolution
 
-    def slice_img_from_annotation(self, annotation_fname):
+    def pixel_mask_from_CellLocatorTransformation(self, coord_converter):
+        """
+        Accept a CellLocatorTransformation
 
-        with open(annotation_fname, 'rb') as in_file:
-            annotation = json.load(in_file)
+        Return
+        ------
+        img_dex_flat -- a np.array of the indices of voxels in the plane
+        new_img_dex_flat -- a np.array of where they should go in the new image
+        n_x -- number of rows in new_img.transpose()
+        n_y -- number of cols in new_img.transpose()
+        """
 
-        coord_converter = CellLocatorTransformation(annotation)
         valid_dex = np.where(coord_converter.get_slice_mask_from_allen(self.allen_coords,
                                                                        self.resolution))
 
@@ -153,7 +159,7 @@ class BrainImage(object):
 
         ix_arr = img_ix[valid_dex]
         iy_arr = n_img_y-1-img_iy[valid_dex]
-        ii_flat = ix_arr*n_img_y+iy_arr
+        new_img_dex_flat = ix_arr*n_img_y+iy_arr
 
         # get the pixel indices of the 3D voxels that are in the slice
         ax_arr = new_allen_dexes[0,valid_dex]
@@ -162,10 +168,24 @@ class BrainImage(object):
 
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
-        pixel_vals = self.img_data[img_dex_flat]
 
+        return img_dex_flat, new_img_dex_flat, n_img_x, n_img_y
+
+
+    def slice_img_from_annotation(self, annotation_fname):
+
+        with open(annotation_fname, 'rb') as in_file:
+            annotation = json.load(in_file)
+
+        coord_converter = CellLocatorTransformation(annotation)
+        (img_dex_flat,
+         new_img_dex_flat,
+                  n_img_x,
+                  n_img_y) = self.pixel_mask_from_CellLocatorTransformation(coord_converter)
+
+        pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_x*n_img_y, dtype=float)
-        new_img[ii_flat] = pixel_vals
+        new_img[new_img_dex_flat] = pixel_vals
         new_img = new_img.reshape(n_img_x, n_img_y)
 
         new_img = new_img.transpose()
