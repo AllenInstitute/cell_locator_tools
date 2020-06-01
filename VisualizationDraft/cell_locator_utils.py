@@ -46,6 +46,7 @@ class CellLocatorTransformation(object):
     def allen_to_slice(self, pts):
         """
         pts is a numpy array with shape (3, N) where N is the number of points
+        pts contains the coordinates of the points
         """
         pts_4d = np.zeros((4,pts.shape[1]), dtype=float)
         pts_4d[:3,:] = pts
@@ -56,6 +57,7 @@ class CellLocatorTransformation(object):
     def slice_to_allen(self, pts):
         """
         pts is a numpy array with shape (2, N) where N is the number of points
+        pts contains the coordinates of the points
         """
         pts_4d = np.zeros((4,pts.shape[1]), dtype=float)
         pts_4d[:2,:] = pts
