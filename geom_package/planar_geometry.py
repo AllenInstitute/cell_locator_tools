@@ -48,6 +48,35 @@ def rotate_v_into_w_2d(v, w, already_normed=False):
     return np.array([[aa, bb],[-bb,aa]])
 
 
+def rotate_v_into_w_3d(v, w):
+    # first find matrices to rotate v, w in to the y,z plane
+    # then find the matrix to rotate those projections into each other
+    # then apply the inverse of the matrix rotating w in the y,z plane
+
+    v = v/np.sqrt(np.sum(v**2))
+    w = w/np.sqrt(np.sum(w**2))
+    v_abs = np.abs(v)
+    w_abs = np.abs(w)
+    v2d_to_yz = np.identity(3, dtype=float)
+    if v_abs[:2].max()>0.0:
+        v2d_to_yz[:2,:2] = rotate_v_into_w_2d(v[:2], np.array([0.0,1.0]),
+                                              already_normed=False)
+
+    w2d_to_yz = np.identity(3, dtype=float)
+    if w_abs[:2].max()>0.0:
+        w2d_to_yz[:2, :2] = rotate_v_into_w_2d(w[:2], np.array([0.0, 1.0]),
+                                               already_normed=False)
+
+    tmp_m = rotate_v_into_w_2d(np.dot(v2d_to_yz, v)[1:],
+                               np.dot(w2d_to_yz, w)[1:])
+
+    v_to_w_yz = np.identity(3, dtype=float)
+    v_to_w_yz[1:,1:] = tmp_m
+
+    return np.dot(w2d_to_yz.transpose(),
+                  np.dot(v_to_w_yz, v2d_to_yz))
+
+
 class Plane(object):
 
     @property

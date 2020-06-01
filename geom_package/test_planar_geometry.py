@@ -148,6 +148,42 @@ class TestVector(unittest.TestCase):
                                        atol=1.0e-10, rtol=1.0e-10)
 
 
+    def test_rotating_3d_vectors(self):
+        rng = np.random.RandomState(61243)
+        for ii in range(100):
+            vv = rng.random_sample(3)-0.5
+            vnorm = np.sqrt(np.sum(vv**2))
+            ww = rng.random_sample(3)-0.5
+            wnorm = np.sqrt(np.sum(ww**2))
+            mm = planar_geometry.rotate_v_into_w_3d(vv, ww)
+            test = np.dot(mm, vv)
+            d = np.dot(ww, test)
+            self.assertAlmostEqual(d, vnorm*wnorm, delta=1.0e-10*d)
+
+        # test edge cases (i.e. rotating into/out of the axes)
+        xhat = np.array([1.0,0.0,0.0])
+        yhat = np.array([0.0,1.0,0.0])
+        zhat = np.array([0.0,0.0,1.0])
+        uu = np.array([3.4, -1.0, 1.2])
+
+        pairs = ((xhat, yhat),
+                 (xhat, zhat),
+                 (xhat, uu),
+                 (yhat, zhat),
+                 (yhat, uu),
+                 (zhat, uu))
+
+        for vector_p in pairs:
+            for vv, ww in zip((vector_p[0], vector_p[1]),
+                              (vector_p[1], vector_p[0])):
+                vnorm = np.sqrt(np.sum(vv**2))
+                wnorm = np.sqrt(np.sum(ww**2))
+                mm = planar_geometry.rotate_v_into_w_3d(vv, ww)
+                test = np.dot(mm, vv)
+                d = np.dot(test, ww)
+                self.assertAlmostEqual(d, vnorm*wnorm, delta=1.0e-10*d)
+
+
 class TestPlane(unittest.TestCase):
 
     def test_plane_from_points(self):
