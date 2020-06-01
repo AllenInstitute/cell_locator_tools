@@ -36,14 +36,15 @@ def rot_about_x(ang_deg):
     return m
 
 
-def rotate_v_into_w_2d(v, w):
+def rotate_v_into_w_2d(v, w, already_normed=False):
     """
     Find matrix that rotates the vector v into the vector w
     """
-    v_n = v/np.sqrt(np.sum(v**2))
-    w_n = w/np.sqrt(np.sum(w**2))
-    aa = w_n[0]*v_n[0]+w_n[1]*v_n[1]
-    bb = w_n[0]*v_n[1]-w_n[1]*v_n[0]
+    if not already_normed:
+        v = v/np.sqrt(np.sum(v**2))
+        w = w/np.sqrt(np.sum(w**2))
+    aa = w[0]*v[0]+w[1]*v[1]
+    bb = w[0]*v[1]-w[1]*v[0]
     return np.array([[aa, bb],[-bb,aa]])
 
 
