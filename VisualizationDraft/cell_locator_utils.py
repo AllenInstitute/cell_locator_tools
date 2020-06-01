@@ -109,8 +109,10 @@ class BrainImage(object):
         valid_dex = np.where(coord_converter.get_slice_mask_from_allen(self.allen_coords,
                                                                        self.resolution))
 
+        # find the coordinates of all of the voxels in the slice frame
         slice_coords = coord_converter.allen_to_slice(self.allen_coords[:,valid_dex[0]])
 
+        # construct an empty grid to represent the 2D image of the slice
         img_x_min = slice_coords[0,:].min()
         img_x_max = slice_coords[0,:].max()
         img_y_min = slice_coords[1,:].min()
@@ -126,6 +128,7 @@ class BrainImage(object):
 
         new_img_pts = np.zeros((2, n_img_x*n_img_y), dtype=float)
 
+        # fill new_img_pts with the 2D coordinates of the slice image
         mesh = np.meshgrid(self.resolution*(img_x_min+np.arange(n_img_x)),
                            self.resolution*(img_y_min+np.arange(n_img_y)),
                            indexing='ij')
@@ -133,6 +136,7 @@ class BrainImage(object):
         new_img_pts[1,:] = mesh.pop(1).flatten()
         new_img_pts[0,:] = mesh.pop(0).flatten()
 
+        # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
         new_allen_dexes = np.round(new_allen_coords/self.resolution).astype(int)
 
@@ -143,6 +147,7 @@ class BrainImage(object):
                              np.logical_and(new_allen_dexes[2,:]>=0,
                                             new_allen_dexes[2,:]<self.nz0))))))
 
+        # get the pixel indices of new_img_pts
         img_ix = (new_img_pts[0,:]/self.resolution-img_x_min).astype(int)
         img_iy = (new_img_pts[1,:]/self.resolution-img_y_min).astype(int)
 
@@ -151,10 +156,12 @@ class BrainImage(object):
         iy_arr = n_img_y-1-img_iy[valid_dex]
         ii_flat = ix_arr*n_img_y+iy_arr
 
+        # get the pixel indices of the 3D voxels that are in the slice
         ax_arr = new_allen_dexes[0,valid_dex]
         ay_arr = new_allen_dexes[1,valid_dex]
         az_arr = new_allen_dexes[2,valid_dex]
 
+        # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
         pixel_vals = self.img_data[img_dex_flat]
         new_img[ii_flat] = pixel_vals
