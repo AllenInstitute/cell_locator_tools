@@ -151,7 +151,6 @@ class BrainImage(object):
         img_ix = (new_img_pts[0,:]/self.resolution-img_x_min).astype(int)
         img_iy = (new_img_pts[1,:]/self.resolution-img_y_min).astype(int)
 
-        new_img = np.zeros(n_img_x*n_img_y, dtype=float)
         ix_arr = img_ix[valid_dex]
         iy_arr = n_img_y-1-img_iy[valid_dex]
         ii_flat = ix_arr*n_img_y+iy_arr
@@ -164,6 +163,8 @@ class BrainImage(object):
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
         pixel_vals = self.img_data[img_dex_flat]
+
+        new_img = np.zeros(n_img_x*n_img_y, dtype=float)
         new_img[ii_flat] = pixel_vals
         new_img = new_img.reshape(n_img_x, n_img_y)
 
