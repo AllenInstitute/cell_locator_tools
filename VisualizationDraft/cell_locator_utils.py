@@ -159,7 +159,7 @@ class BrainImage(object):
 
         ix_arr = img_ix[valid_dex]
         iy_arr = n_img_y-1-img_iy[valid_dex]
-        new_img_dex_flat = ix_arr*n_img_y+iy_arr
+        new_img_dex_flat = iy_arr*n_img_x+ix_arr
 
         # get the pixel indices of the 3D voxels that are in the slice
         ax_arr = new_allen_dexes[0,valid_dex]
@@ -186,7 +186,6 @@ class BrainImage(object):
         pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_x*n_img_y, dtype=float)
         new_img[new_img_dex_flat] = pixel_vals
-        new_img = new_img.reshape(n_img_x, n_img_y)
+        new_img = new_img.reshape(n_img_y, n_img_x)
 
-        new_img = new_img.transpose()
         return new_img
