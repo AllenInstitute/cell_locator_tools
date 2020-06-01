@@ -25,13 +25,24 @@ class CellLocatorTransformation(object):
                                                [1.0, 0.0, 0.0, 0.0],
                                                [0.0, 0.0, 0.0, 1.0]])
 
-        self._initialize_from_orientation(annotation)
+        self._slice_to_c = self.slice_to_c_from_orientation(annotation)
 
-    def _initialize_from_orientation(self, annotation):
+        self._c_to_slice = np.linalg.inv(self._slice_to_c)
+        self._a_to_slice = np.dot(self._c_to_slice,
+                                  self._a_to_c_transposition)
+        self._slice_to_a = np.dot(self._c_to_a_transposition,
+                                  self._slice_to_c)
+
+
+    def slice_to_c_from_orientation(self, annotation):
+        """
+        Get matrix for transforming from slice coordinate to CellLocator
+        3D coordinates from annotation['SplineOrientation']
+        """
 
         # matrices to go between x,y,z (in CellLocator coordinates)
         # to x, y, z with z along the normal of the plane
-        self._slice_to_c = np.zeros((4,4), dtype=float)
+        slice_to_c = np.zeros((4,4), dtype=float)
         if 'SplineOrientation' in annotation:
             orientation = annotation['SplineOrientation']
         else:
@@ -39,13 +50,8 @@ class CellLocatorTransformation(object):
 
         for irow in range(4):
             for icol in range(4):
-                self._slice_to_c[irow, icol] = orientation[irow*4+icol]
-
-        self._c_to_slice = np.linalg.inv(self._slice_to_c)
-        self._a_to_slice = np.dot(self._c_to_slice,
-                                  self._a_to_c_transposition)
-        self._slice_to_a = np.dot(self._c_to_a_transposition,
-                                  self._slice_to_c)
+                slice_to_c[irow, icol] = orientation[irow*4+icol]
+        return slice_to_c
 
     def allen_to_slice(self, pts):
         """
