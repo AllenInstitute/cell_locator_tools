@@ -66,7 +66,8 @@ class CellLocatorTransformation(object):
 
     def get_slice_mask_from_allen(self, pts, resolution):
         """
-        pts is a numpy array wth shape (3, N) where N is the number of points
+        pts is a numpy array wth shape (3, N) where N is the number of points;
+        it contains the x,y,z coordinate values of the allen pixels
         """
         z_value = np.dot(self._a_to_slice[2,:3], pts)+self._a_to_slice[2,3]
         return np.abs(z_value)<0.5*resolution
