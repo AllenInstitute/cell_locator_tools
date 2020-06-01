@@ -25,6 +25,10 @@ class CellLocatorTransformation(object):
                                                [1.0, 0.0, 0.0, 0.0],
                                                [0.0, 0.0, 0.0, 1.0]])
 
+        self._initialize_from_orientation(annotation)
+
+    def _initialize_from_orientation(self, annotation):
+
         # matrices to go between x,y,z (in CellLocator coordinates)
         # to x, y, z with z along the normal of the plane
         self._slice_to_c = np.zeros((4,4), dtype=float)
