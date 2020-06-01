@@ -108,8 +108,8 @@ class BrainImage(object):
         ------
         img_dex_flat -- a np.array of the indices of voxels in the plane
         new_img_dex_flat -- a np.array of where they should go in the new image
-        n_x -- number of rows in new_img.transpose()
-        n_y -- number of cols in new_img.transpose()
+        n_cols -- number of cols in new_img
+        n_rows -- number of rows in new_img
         """
 
         valid_dex = np.where(coord_converter.get_slice_mask_from_allen(self.allen_coords,
@@ -180,12 +180,12 @@ class BrainImage(object):
         coord_converter = CellLocatorTransformation(annotation)
         (img_dex_flat,
          new_img_dex_flat,
-                  n_img_x,
-                  n_img_y) = self.pixel_mask_from_CellLocatorTransformation(coord_converter)
+                  n_img_cols,
+                  n_img_rows) = self.pixel_mask_from_CellLocatorTransformation(coord_converter)
 
         pixel_vals = self.img_data[img_dex_flat]
-        new_img = np.zeros(n_img_x*n_img_y, dtype=float)
+        new_img = np.zeros(n_img_rows*n_img_cols, dtype=float)
         new_img[new_img_dex_flat] = pixel_vals
-        new_img = new_img.reshape(n_img_y, n_img_x)
+        new_img = new_img.reshape(n_img_rows, n_img_cols)
 
         return new_img
