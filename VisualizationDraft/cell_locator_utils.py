@@ -317,14 +317,15 @@ class BrainImage(object):
 
 
         coord_converter = CellLocatorTransformation(annotation, from_pts=from_pts)
+        brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume)
         (img_dex_flat,
          new_img_dex_flat,
                   n_img_cols,
-                  n_img_rows) = self.pixel_mask_from_CellLocatorTransformation(coord_converter)
+                  n_img_rows) = self.pixel_mask_from_BrainSlice(brain_slice)
 
         pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_rows*n_img_cols, dtype=float)
         new_img[new_img_dex_flat] = pixel_vals
         new_img = new_img.reshape(n_img_rows, n_img_cols)
 
-        return new_img
+        return new_img, brain_slice
