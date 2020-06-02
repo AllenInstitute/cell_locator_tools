@@ -15,6 +15,32 @@ import hashlib
 import unittest
 import cell_locator_utils
 
+class BrainSliceTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        fname = '../CellLocatorAnnotations/annotation_unittest.json'
+        assert os.path.isfile(fname)
+        with open(fname, 'rb') as in_file:
+            cls.full_annotation = json.load(in_file)
+        resolution = 25
+        img_name = 'atlasVolume.mhd'
+        img = SimpleITK.ReadImage(img_name)
+        img_data = SimpleITK.GetArrayFromImage(img)
+        cls.brain_img = cell_locator_utils.BrainImage(img_data, resolution)
+
+    def test_pixel_to_slice(self):
+        coord_converter = cell_locator_utils.CellLocatorTransformation(self.full_annotation)
+        brain_slice = cell_locator_utils.BrainSlice(coord_converter,
+                                                    self.brain_img.resolution,
+                                                    self.brain_img.brain_volume)
+        rng = np.random.RandomState(8123512)
+        pixel0 = rng.randint(0,4000, size=(2,5000))
+        slice_coords = brain_slice.pixel_to_slice(pixel0)
+        pixel1 = brain_slice.slice_to_pixel(slice_coords)
+        np.testing.assert_array_equal(pixel0, pixel1)
+
+
 class ImageGenerationTest(unittest.TestCase):
 
     def test_images(self):

@@ -211,6 +211,12 @@ class BrainSlice(object):
         slice_coords[1,:] = yy*self.resolution
         return slice_coords
 
+    def slice_to_pixel(self, slice_coords):
+        pixel_coords = np.zeros(slice_coords.shape, dtype=int)
+        pixel_coords[0,:] = np.round(slice_coords[0,:]/self.resolution).astype(int)-self.x_min_pix
+        yy = np.round(slice_coords[1,:]/self.resolution).astype(int)
+        pixel_coords[1,:] = self.n_rows-1+self.y_min_pix-yy
+        return pixel_coords
 
 
 class BrainImage(object):
