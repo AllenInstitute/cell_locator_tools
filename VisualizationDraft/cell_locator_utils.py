@@ -205,7 +205,7 @@ class BrainImage(object):
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
 
-        return img_dex_flat, new_img_dex_flat, n_img_cols, n_img_rows
+        return img_dex_flat[0], new_img_dex_flat, n_img_cols, n_img_rows
 
 
     def slice_img_from_annotation(self, annotation_fname, from_pts=False):
