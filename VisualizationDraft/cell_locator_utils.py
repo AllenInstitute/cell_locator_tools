@@ -174,12 +174,17 @@ class BrainImage(object):
         new_img_pts = np.zeros((2, n_img_cols*n_img_rows), dtype=float)
 
         # fill new_img_pts with the 2D coordinates of the slice image
-        mesh = np.meshgrid(self.resolution*(img_x_min+np.arange(n_img_cols)),
-                           self.resolution*(img_y_min+np.arange(n_img_rows)),
-                           indexing='ij')
+        pixel_mesh = np.meshgrid(np.arange(n_img_cols).astype(int),
+                                 np.arange(n_img_rows).astype(int),
+                                 indexing='ij')
 
-        new_img_pts[1,:] = mesh.pop(1).flatten()
-        new_img_pts[0,:] = mesh.pop(0).flatten()
+        # pixel coordinates in new grid
+        img_iy = pixel_mesh.pop(1).flatten()
+        img_ix = pixel_mesh.pop(0).flatten()
+
+        # world coordinates in slice frame
+        new_img_pts[1,:] = self.resolution*(img_iy+img_y_min)
+        new_img_pts[0,:] = self.resolution*(img_ix+img_x_min)
 
         # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
@@ -191,10 +196,6 @@ class BrainImage(object):
                              np.logical_and(new_allen_dexes[1,:]<self.ny0,
                              np.logical_and(new_allen_dexes[2,:]>=0,
                                             new_allen_dexes[2,:]<self.nz0))))))
-
-        # get the pixel indices of new_img_pts
-        img_ix = (new_img_pts[0,:]/self.resolution-img_x_min).astype(int)
-        img_iy = (new_img_pts[1,:]/self.resolution-img_y_min).astype(int)
 
         ix_arr = img_ix[valid_dex]
         iy_arr = n_img_rows-1-img_iy[valid_dex]
