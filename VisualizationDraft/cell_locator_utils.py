@@ -207,7 +207,8 @@ class BrainSlice(object):
     def pixel_to_slice(self, pixel_coords):
         slice_coords = np.zeros(pixel_coords.shape, dtype=float)
         slice_coords[0,:] = (pixel_coords[0,:]+self.x_min_pix)*self.resolution
-        slice_coords[1,:] = (pixel_coords[1,:]+self.y_min_pix)*self.resolution
+        yy = self.n_rows-1-pixel_coords[1,:]+self.y_min_pix
+        slice_coords[1,:] = yy*self.resolution
         return slice_coords
 
 
@@ -280,7 +281,7 @@ class BrainImage(object):
         new_allen_voxels, voxel_mask = self.allen_to_voxel(new_allen_coords)
 
         ix_arr = img_ix[voxel_mask]
-        iy_arr = brain_slice.n_rows-1-img_iy[voxel_mask]
+        iy_arr = img_iy[voxel_mask]
         new_img_dex_flat = iy_arr*brain_slice.n_cols+ix_arr
 
         # get the pixel indices of the 3D voxels that are in the slice
