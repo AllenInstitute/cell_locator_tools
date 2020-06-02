@@ -237,6 +237,18 @@ class BrainImage(object):
         self.brain_volume[0,:] = mesh.pop(0).flatten()
         self.resolution = resolution
 
+    def allen_to_pixel(self, allen_coords):
+        pixel_coords = np.round(allen_coords/self.resolution).astype(int)
+
+        valid_dex = np.where(np.logical_and(pixel_coords[0,:]>=0,
+                             np.logical_and(pixel_coords[0,:]<self.nx0,
+                             np.logical_and(pixel_coords[1,:]>=0,
+                             np.logical_and(pixel_coords[1,:]<self.ny0,
+                             np.logical_and(pixel_coords[2,:]>=0,
+                                            pixel_coords[2,:]<self.nz0))))))[0]
+        return pixel_coords, valid_dex
+
+
     def pixel_mask_from_CellLocatorTransformation(self, coord_converter):
         """
         Accept a CellLocatorTransformation
