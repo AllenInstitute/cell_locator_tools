@@ -79,6 +79,19 @@ class CellLocatorTransformation(object):
             slice_to_c[ii, 3] += slice_plane.origin[ii]
         return slice_to_c
 
+    def allen_to_c(self, pts):
+        return np.dot(self._a_to_c[:3,:3], pts)
+
+    def c_to_allen(self, pts):
+        return np.dot(self._c_to_a[:3,:3], pts)
+
+    def c_to_slice(self, pts):
+        pts_4d = np.zeros((4, pts.shape[1]), dtype=float)
+        pts_4d[:3,:] = pts
+        pts_4d[3,:] = 1.0
+        pts_4d = np.dot(self._c_to_slice, pts_4d)
+        return pts_4d[:3,:]
+
     def allen_to_slice(self, pts):
         """
         pts is a numpy array with shape (3, N) where N is the number of points
