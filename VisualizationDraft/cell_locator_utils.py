@@ -281,14 +281,7 @@ class BrainImage(object):
 
         # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
-        new_allen_dexes = np.round(new_allen_coords/self.resolution).astype(int)
-
-        valid_dex = np.where(np.logical_and(new_allen_dexes[0,:]>=0,
-                             np.logical_and(new_allen_dexes[0,:]<self.nx0,
-                             np.logical_and(new_allen_dexes[1,:]>=0,
-                             np.logical_and(new_allen_dexes[1,:]<self.ny0,
-                             np.logical_and(new_allen_dexes[2,:]>=0,
-                                            new_allen_dexes[2,:]<self.nz0))))))
+        new_allen_dexes, valid_dex = self.allen_to_pixel(new_allen_coords)
 
         ix_arr = img_ix[valid_dex]
         iy_arr = n_img_rows-1-img_iy[valid_dex]
@@ -302,7 +295,7 @@ class BrainImage(object):
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
 
-        return img_dex_flat[0], new_img_dex_flat, n_img_cols, n_img_rows
+        return img_dex_flat, new_img_dex_flat, n_img_cols, n_img_rows
 
 
     def slice_img_from_annotation(self, annotation_fname, from_pts=False):
