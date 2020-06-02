@@ -98,43 +98,6 @@ class ImageGenerationTest(unittest.TestCase):
         self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*brain_img.resolution)
         self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*brain_img.resolution)
 
-        return None
-        # tests below will fail
-        (control_allen_dex,
-           control_img_dex,
-             control_nrows,
-             control_ncols) = brain_img.pixel_mask_from_CellLocatorTransformation(c1)
-
-        (test_allen_dex,
-            test_img_dex,
-              test_nrows,
-              test_ncols) = brain_img.pixel_mask_from_CellLocatorTransformation(c2)
-
-        c_not_in_t = 0
-        t_not_in_c = 0
-        c_set = set(control_allen_dex)
-        for ii in np.unique(test_allen_dex):
-            if ii not in c_set:
-                self.assertTrue(mask2[ii])
-                self.assertFalse(mask1[ii])
-                t_not_in_c += 1
-                #print('not in c ',dex_to_pt(ii))
-        t_set = set(test_allen_dex)
-        for ii in np.unique(control_allen_dex):
-            if ii not in t_set:
-                self.assertFalse(mask2[ii])
-                c_not_in_t +=1
-        print('control not in test: ',c_not_in_t,len(control_allen_dex))
-        print('test not in control: ',t_not_in_c,len(test_allen_dex))
-
-        self.assertEqual(len(control_allen_dex), len(np.unique(control_allen_dex)))
-        self.assertEqual(len(test_allen_dex), len(np.unique(test_allen_dex)))
-        self.assertEqual(len(control_allen_dex), len(test_allen_dex))
-        self.assertEqual(len(control_allen_dex), len(np.unique(control_allen_dex)))
-        control_allen_dex = np.sort(control_allen_dex)
-        test_allen_dex = np.sort(test_allen_dex)
-        np.testing.assertArrayEqual(test_allen_dex, control_allen_dex)
-
 
 if __name__ == "__main__":
     unittest.main()
