@@ -263,7 +263,20 @@ class BrainImage(object):
         """
 
         brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume)
+        return self.pixel_mask_from_BrainSlice(brain_slice)
 
+
+    def pixel_mask_from_BrainSlice(self, brain_slice):
+        """
+        Accept a BrainSlice
+
+        Return
+        ------
+        img_dex_flat -- a np.array of the indices of voxels in the plane
+        new_img_dex_flat -- a np.array of where they should go in the new image
+        n_cols -- number of cols in new_img
+        n_rows -- number of rows in new_img
+        """
         # fill new_img_pts with the 2D coordinates of the slice image
         pixel_mesh = np.meshgrid(np.arange(brain_slice.n_cols).astype(int),
                                  np.arange(brain_slice.n_rows).astype(int),
@@ -277,7 +290,7 @@ class BrainImage(object):
         new_img_pts = brain_slice.pixel_to_slice(np.array([img_ix, img_iy]))
 
         # find the 3D voxels that actually fall within the 2D slice
-        new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
+        new_allen_coords = brain_slice.coord_converter.slice_to_allen(new_img_pts)
         new_allen_voxels, voxel_mask = self.allen_to_voxel(new_allen_coords)
 
         ix_arr = img_ix[voxel_mask]
