@@ -55,31 +55,31 @@ def draw_shape(xx, yy, out_name, n_t=100):
     ann = Annotation(xx, yy, resolution)
     plt.scatter(ann._border_x_pixels_by_x, ann._border_y_pixels_by_x)
 
-    cx = -ann._x_min+ann._spline.x.sum()/(len(ann._spline.x)*resolution)
-    cy = -ann._y_min+ann._spline.y.sum()/(len(ann._spline.y)*resolution)
+    cx = -ann.x_min+ann._spline.x.sum()/(len(ann._spline.x)*resolution)
+    cy = -ann.y_min+ann._spline.y.sum()/(len(ann._spline.y)*resolution)
 
     #cx, cy = ann.get_mask()
 
     plt.scatter([cx], [cy], color='r')
-    plt.scatter(-ann._x_min+ann._spline.x/ann.resolution,
-                -ann._y_min+ann._spline.y/ann.resolution,
+    plt.scatter(-ann.x_min+ann._spline.x/ann.resolution,
+                -ann.y_min+ann._spline.y/ann.resolution,
                 c='c')
 
     mask = ann.get_mask()
 
-    dx = min(mask.shape[1], img.shape[1]-ann._x_min)
-    dy = min(mask.shape[0], img.shape[0]-ann._y_min)
+    dx = min(mask.shape[1], img.shape[1]-ann.x_min)
+    dy = min(mask.shape[0], img.shape[0]-ann.y_min)
 
     print('before ',img.sum())
 
-    img[ann._y_min:ann._y_min+dy,
-        ann._x_min:ann._x_min+dx] = mask
+    img[ann.y_min:ann.y_min+dy,
+        ann.x_min:ann.x_min+dx] = mask
     print('after ',img.sum())
     plt.subplot(2,2,4)
     plt.imshow(img, zorder=1, cmap='gray')
     plt.plot(scale_x(x_s), scale_y(y_s), color='c', zorder=2, alpha=0.2)
     plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
-    plt.scatter(ann._cx+ann._x_min, ann._cy+ann._y_min, zorder=4, color='g')
+    plt.scatter(ann._cx+ann.x_min, ann._cy+ann.y_min, zorder=4, color='g')
     print('saving %s' % out_name)
     print(mask.sum())
     plt.savefig(out_name)

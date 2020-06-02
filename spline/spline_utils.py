@@ -88,6 +88,14 @@ class Spline2D(object):
 class Annotation(object):
 
     @property
+    def x_min(self):
+        return self._x_min
+
+    @property
+    def y_min(self):
+        return self._y_min
+
+    @property
     def border_x(self):
         return self._border_x
 
