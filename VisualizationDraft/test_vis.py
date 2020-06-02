@@ -93,10 +93,10 @@ class ImageGenerationTest(unittest.TestCase):
         np.testing.assert_equal(mask1, mask2)
 
         valid = np.where(mask1)
-        a_coords1 = c1.allen_to_slice(brain_img.allen_coords[:,valid[0]])
-        a_coords2 = c2.allen_to_slice(brain_img.allen_coords[:,valid[0]])
-        self.assertLess(np.abs(a_coords1[2,:]).max(), 0.5*brain_img.resolution)
-        self.assertLess(np.abs(a_coords2[2,:]).max(), 0.5*brain_img.resolution)
+        s_coords1 = c1.allen_to_slice(brain_img.allen_coords[:,valid[0]])
+        s_coords2 = c2.allen_to_slice(brain_img.allen_coords[:,valid[0]])
+        self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*brain_img.resolution)
+        self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*brain_img.resolution)
 
         return None
         # tests below will fail
