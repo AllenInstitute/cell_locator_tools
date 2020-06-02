@@ -114,6 +114,81 @@ class CellLocatorTransformation(object):
         return np.abs(z_value)<0.5*resolution
 
 
+class BrainSlice(object):
+
+    @property
+    def coord_converter(self):
+        return self._coord_converter
+
+    @property
+    def resolution(self):
+        return self._resolution
+
+    @property
+    def x_min(self):
+        return self._x_min
+
+    @property
+    def x_max(self):
+        return self._x_max
+
+    @property
+    def y_min(self):
+        return self._y_min
+
+    @property
+    def y_max(self):
+        return self._y_max
+
+    def __init__(self, coord_converter, resolution, brain_volume):
+        """
+        brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
+        """
+        self._coord_converter = coord_converter
+        self._resolution = resolution
+
+        # find all of the voxels that are actually in the slice
+        valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(brain_volume,
+                                                                            self.resolution))
+
+        # find the coordinates of all of the voxels in the slice frame
+        slice_coords = coord_converter.allen_to_slice(brain_volume[:,valid_dex[0]])
+
+        # construct an empty grid to represent the 2D image of the slice
+        self._x_min = slice_coords[0,:].min()
+        self._x_max = slice_coords[0,:].max()
+        self._y_min = slice_coords[1,:].min()
+        self._y_max = slice_coords[1,:].max()
+
+
+    def allen_to_pixel(self, allen_coords):
+        """
+        Convert a 3xN array of allen coordinates into pixel coordinates on the slice
+        """
+        valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(allen_coords,
+                                                                            self.resolution))[0]
+
+        pixel_coords = np.NaN*np.ones((2,allen_coords.shape[1]), dtype=int)
+        slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_dex])\
+
+        xx = np.round(slice_coords[0,:]/self.resolution).astype(int)
+        x0 = np.round(self.x_min/self.resolution).astype(int)
+        pixel_coords[0,valid_dex] = xx-x0
+
+        yy = np.round(slice_coords[1,:]/self.resolution).astype(int)
+        y0 = np.round(self.y_min/self.resolution).astype(int)
+        pixel_coords[1,valid_dex] = yy-y0
+
+        return pixel_coords, valid_dex
+
+    def pixel_to_slice(self, pixel_coords):
+        slice_coords = np.zeros(pixel_coords.shape, dtype=float)
+        slice_coords[0,:] = pixel_coords[0,:]*self.resolution+self.x_min
+        slice_coords[1,:] = pixel_coords[1,:]*self.resolution+self.y_min
+        return slice_coords
+
+
+
 class BrainImage(object):
 
     def __init__(self, img_data, resolution):
