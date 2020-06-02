@@ -133,12 +133,20 @@ class BrainSlice(object):
         return self._x_max
 
     @property
+    def x_min_pix(self):
+        return self._x_min_pix
+
+    @property
     def y_min(self):
         return self._y_min
 
     @property
     def y_max(self):
         return self._y_max
+
+    @property
+    def y_min_pix(self):
+        return self._y_min_pix
 
     @property
     def n_rows(self):
@@ -170,10 +178,12 @@ class BrainSlice(object):
 
         x1 = np.round(self.x_max/self.resolution).astype(int)
         x0 = np.round(self.x_min/self.resolution).astype(int)
+        self._x_min_pix = x0
         self._n_cols = x1-x0+1
 
         y1 = np.round(self.y_max/self.resolution).astype(int)
         y0 = np.round(self.y_min/self.resolution).astype(int)
+        self._y_min_pix= y0
         self._n_rows = y1-y0+1
 
     def allen_to_pixel(self, allen_coords):
@@ -250,16 +260,6 @@ class BrainImage(object):
         slice_coords = coord_converter.allen_to_slice(self.allen_coords[:,valid_dex[0]])
 
         # construct an empty grid to represent the 2D image of the slice
-        img_x_min = slice_coords[0,:].min()
-        img_x_max = slice_coords[0,:].max()
-        img_y_min = slice_coords[1,:].min()
-        img_y_max = slice_coords[1,:].max()
-
-        img_x_min = np.round(img_x_min/self.resolution).astype(int)
-        img_x_max = np.round(img_x_max/self.resolution).astype(int)
-        img_y_min = np.round(img_y_min/self.resolution).astype(int)
-        img_y_max = np.round(img_y_max/self.resolution).astype(int)
-
         n_img_cols = brain_slice.n_cols
         n_img_rows = brain_slice.n_rows
 
@@ -275,8 +275,8 @@ class BrainImage(object):
         img_ix = pixel_mesh.pop(0).flatten()
 
         # world coordinates in slice frame
-        new_img_pts[1,:] = self.resolution*(img_iy+img_y_min)
-        new_img_pts[0,:] = self.resolution*(img_ix+img_x_min)
+        new_img_pts[1,:] = self.resolution*(img_iy+brain_slice.y_min_pix)
+        new_img_pts[0,:] = self.resolution*(img_ix+brain_slice.x_min_pix)
 
         # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
