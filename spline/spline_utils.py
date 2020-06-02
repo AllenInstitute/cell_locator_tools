@@ -88,6 +88,22 @@ class Spline2D(object):
 class Annotation(object):
 
     @property
+    def border_x(self):
+        return self._border_x
+
+    @property
+    def border_y(self):
+        return self._border_y
+
+    @property
+    def border_x_pixels(self):
+        return self._border_x_pixels
+
+    @property
+    def border_y_pixels(self):
+        return self._border_y_pixels
+
+    @property
     def resolution(self):
         return self._resolution
 
@@ -123,6 +139,9 @@ class Annotation(object):
             border_y.append(yy[:-1])
         border_x = np.concatenate(border_x)
         border_y = np.concatenate(border_y)
+
+        self._border_x = border_x
+        self._border_y = border_y
 
         # convert to integer pixel values
         self._border_x_pixels = np.round(border_x/resolution).astype(int)
