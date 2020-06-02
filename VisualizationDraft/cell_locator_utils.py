@@ -263,13 +263,9 @@ class BrainImage(object):
 
         brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume)
 
-        # construct an empty grid to represent the 2D image of the slice
-        n_img_cols = brain_slice.n_cols
-        n_img_rows = brain_slice.n_rows
-
         # fill new_img_pts with the 2D coordinates of the slice image
-        pixel_mesh = np.meshgrid(np.arange(n_img_cols).astype(int),
-                                 np.arange(n_img_rows).astype(int),
+        pixel_mesh = np.meshgrid(np.arange(brain_slice.n_cols).astype(int),
+                                 np.arange(brain_slice.n_rows).astype(int),
                                  indexing='ij')
 
         # pixel coordinates in new grid
@@ -284,8 +280,8 @@ class BrainImage(object):
         new_allen_voxels, voxel_mask = self.allen_to_voxel(new_allen_coords)
 
         ix_arr = img_ix[voxel_mask]
-        iy_arr = n_img_rows-1-img_iy[voxel_mask]
-        new_img_dex_flat = iy_arr*n_img_cols+ix_arr
+        iy_arr = brain_slice.n_rows-1-img_iy[voxel_mask]
+        new_img_dex_flat = iy_arr*brain_slice.n_cols+ix_arr
 
         # get the pixel indices of the 3D voxels that are in the slice
         ax_arr = new_allen_voxels[0,voxel_mask]
@@ -295,7 +291,7 @@ class BrainImage(object):
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
 
-        return img_dex_flat, new_img_dex_flat, n_img_cols, n_img_rows
+        return img_dex_flat, new_img_dex_flat, brain_slice.n_cols, brain_slice.n_rows
 
 
     def slice_img_from_annotation(self, annotation_fname, from_pts=False):
