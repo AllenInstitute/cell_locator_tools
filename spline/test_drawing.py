@@ -6,6 +6,8 @@ from spline_utils import Spline2D, Annotation
 
 import numpy as np
 
+import os
+import hashlib
 
 
 def draw_shape(xx, yy, out_name, n_t=100):
@@ -82,6 +84,24 @@ def draw_shape(xx, yy, out_name, n_t=100):
     print(mask.sum())
     plt.savefig(out_name)
 
+    m5_control = hashlib.md5()
+    with open(os.path.join('test_figs/%s' % os.path.basename(out_name)), 'rb') as in_file:
+        while True:
+            data = in_file.read(10000)
+            if len(data)==0:
+                break
+            m5_control.update(data)
+
+    m5_test = hashlib.md5()
+    with open(out_name, 'rb') as in_file:
+        while True:
+            data = in_file.read(10000)
+            if len(data)==0:
+                break
+            m5_test.update(data)
+
+    assert m5_control.hexdigest() == m5_test.hexdigest()
+
     #exit()
     #print(mask.sum())
     #print(ann._x_min,ann._y_min)
@@ -94,20 +114,20 @@ if __name__ == "__main__":
 
     xx = np.array([2, 4, 5, 6, 9, 6, 5, 4])+5
     yy = np.array([4,5,8,5,4,3,1,3])
-    draw_shape(xx, yy, 'star.pdf')
+    draw_shape(xx, yy, 'star.png')
 
     xx = np.array([2,7,3,4,5,11,7,6])
     yy = np.array([3,6,9,10,10,4,4,1])
     assert len(xx) == len(yy)
-    draw_shape(xx, yy, 'snake.pdf')
+    draw_shape(xx, yy, 'snake.png')
 
     xx = np.array([1,5,5,7,7,1])+5
     yy = np.array([1,1,7,7,0,0])+5
-    draw_shape(xx,yy,'ell.pdf')
+    draw_shape(xx,yy,'ell.png')
 
     xx = np.array([1,3,6,7,8,9,7,5,4,3])
     yy = np.array([2,6,6,2,4,3,1,3,4,2])
-    draw_shape(xx,yy,'tilde.pdf')
+    draw_shape(xx,yy,'tilde.png')
 
     pts = [(2,2),(1,5),(3,7),(6,7),(8,6),
            (7,2), (6,3), (7,5), (6,6),
@@ -117,4 +137,4 @@ if __name__ == "__main__":
     for ii in range(len(pts)):
         xx[ii] =pts[ii][0]
         yy[ii] = pts[ii][1]
-    draw_shape(xx,yy,'horseshoe.pdf')
+    draw_shape(xx,yy,'horseshoe.png')

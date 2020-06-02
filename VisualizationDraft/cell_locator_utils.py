@@ -4,8 +4,11 @@ import sys
 this_dir = os.environ['PWD']
 mod_dir = this_dir.replace('VisualizationDraft', 'geom_package')
 sys.path.append(mod_dir)
+mod_dir = this_dir.replace('VisualizationDraft', 'spline')
+sys.path.append(mod_dir)
 
 import planar_geometry
+import spline_utils
 import numpy as np
 import json
 
