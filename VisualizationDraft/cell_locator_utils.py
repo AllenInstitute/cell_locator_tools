@@ -257,8 +257,6 @@ class BrainImage(object):
         n_img_cols = brain_slice.n_cols
         n_img_rows = brain_slice.n_rows
 
-        new_img_pts = np.zeros((2, n_img_cols*n_img_rows), dtype=float)
-
         # fill new_img_pts with the 2D coordinates of the slice image
         pixel_mesh = np.meshgrid(np.arange(n_img_cols).astype(int),
                                  np.arange(n_img_rows).astype(int),
