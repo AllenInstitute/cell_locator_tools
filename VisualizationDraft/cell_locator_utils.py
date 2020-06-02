@@ -194,15 +194,13 @@ class BrainSlice(object):
                                                                             self.resolution))[0]
 
         pixel_coords = np.NaN*np.ones((2,allen_coords.shape[1]), dtype=int)
-        slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_dex])\
+        slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_dex])
 
         xx = np.round(slice_coords[0,:]/self.resolution).astype(int)
-        x0 = np.round(self.x_min/self.resolution).astype(int)
-        pixel_coords[0,valid_dex] = xx-x0
+        pixel_coords[0,valid_dex] = xx-self.x_min_pix
 
         yy = np.round(slice_coords[1,:]/self.resolution).astype(int)
-        y0 = np.round(self.y_min/self.resolution).astype(int)
-        pixel_coords[1,valid_dex] = yy-y0
+        pixel_coords[1,valid_dex] = yy-self.y_min_pix
 
         return pixel_coords, valid_dex
 
