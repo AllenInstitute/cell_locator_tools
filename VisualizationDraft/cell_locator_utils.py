@@ -237,7 +237,7 @@ class BrainImage(object):
         self.brain_volume[0,:] = mesh.pop(0).flatten()
         self.resolution = resolution
 
-    def allen_to_pixel(self, allen_coords):
+    def allen_to_voxel(self, allen_coords):
         pixel_coords = np.round(allen_coords/self.resolution).astype(int)
 
         valid_dex = np.where(np.logical_and(pixel_coords[0,:]>=0,
@@ -281,16 +281,16 @@ class BrainImage(object):
 
         # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
-        new_allen_dexes, valid_dex = self.allen_to_pixel(new_allen_coords)
+        new_allen_voxels, voxel_mask = self.allen_to_voxel(new_allen_coords)
 
-        ix_arr = img_ix[valid_dex]
-        iy_arr = n_img_rows-1-img_iy[valid_dex]
+        ix_arr = img_ix[voxel_mask]
+        iy_arr = n_img_rows-1-img_iy[voxel_mask]
         new_img_dex_flat = iy_arr*n_img_cols+ix_arr
 
         # get the pixel indices of the 3D voxels that are in the slice
-        ax_arr = new_allen_dexes[0,valid_dex]
-        ay_arr = new_allen_dexes[1,valid_dex]
-        az_arr = new_allen_dexes[2,valid_dex]
+        ax_arr = new_allen_voxels[0,voxel_mask]
+        ay_arr = new_allen_voxels[1,voxel_mask]
+        az_arr = new_allen_voxels[2,voxel_mask]
 
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
