@@ -11,7 +11,7 @@ import json
 
 class CellLocatorTransformation(object):
 
-    def __init__(self, annotation, use_points=False):
+    def __init__(self, annotation, from_pts=False):
         """
         annotation is a dict containing the annotation
         """
@@ -32,7 +32,7 @@ class CellLocatorTransformation(object):
                                                [1.0, 0.0, 0.0, 0.0],
                                                [0.0, 0.0, 0.0, 1.0]])
 
-        if use_points:
+        if from_pts:
             self._slice_to_c = self.slice_to_c_from_points(annotation)
         else:
             self._slice_to_c = self.slice_to_c_from_orientation(annotation)
@@ -216,7 +216,7 @@ class BrainImage(object):
             annotation = annotation['Markups'][0]
 
 
-        coord_converter = CellLocatorTransformation(annotation, use_points=from_pts)
+        coord_converter = CellLocatorTransformation(annotation, from_pts=from_pts)
         (img_dex_flat,
          new_img_dex_flat,
                   n_img_cols,
