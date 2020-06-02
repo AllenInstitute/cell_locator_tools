@@ -140,6 +140,14 @@ class BrainSlice(object):
     def y_max(self):
         return self._y_max
 
+    @property
+    def n_rows(self):
+        return self._n_rows
+
+    @property
+    def n_cols(self):
+        return self._n_cols
+
     def __init__(self, coord_converter, resolution, brain_volume):
         """
         brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
@@ -160,6 +168,13 @@ class BrainSlice(object):
         self._y_min = slice_coords[1,:].min()
         self._y_max = slice_coords[1,:].max()
 
+        x1 = np.round(self.x_max/self.resolution).astype(int)
+        x0 = np.round(self.x_min/self.resolution).astype(int)
+        self._n_cols = x1-x0+1
+
+        y1 = np.round(self.y_max/self.resolution).astype(int)
+        y0 = np.round(self.y_min/self.resolution).astype(int)
+        self._n_rows = y1-y0+1
 
     def allen_to_pixel(self, allen_coords):
         """
@@ -226,6 +241,8 @@ class BrainImage(object):
         n_rows -- number of rows in new_img
         """
 
+        brain_slice = BrainSlice(coord_converter, self.resolution, self.allen_coords)
+
         valid_dex = np.where(coord_converter.get_slice_mask_from_allen(self.allen_coords,
                                                                        self.resolution))
 
@@ -243,8 +260,8 @@ class BrainImage(object):
         img_y_min = np.round(img_y_min/self.resolution).astype(int)
         img_y_max = np.round(img_y_max/self.resolution).astype(int)
 
-        n_img_cols = img_x_max-img_x_min+1
-        n_img_rows = img_y_max-img_y_min+1
+        n_img_cols = brain_slice.n_cols
+        n_img_rows = brain_slice.n_rows
 
         new_img_pts = np.zeros((2, n_img_cols*n_img_rows), dtype=float)
 
