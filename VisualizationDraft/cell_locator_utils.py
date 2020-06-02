@@ -208,8 +208,8 @@ class BrainSlice(object):
 
     def pixel_to_slice(self, pixel_coords):
         slice_coords = np.zeros(pixel_coords.shape, dtype=float)
-        slice_coords[0,:] = pixel_coords[0,:]*self.resolution+self.x_min
-        slice_coords[1,:] = pixel_coords[1,:]*self.resolution+self.y_min
+        slice_coords[0,:] = (pixel_coords[0,:]+self.x_min_pix)*self.resolution
+        slice_coords[1,:] = (pixel_coords[1,:]+self.y_min_pix)*self.resolution
         return slice_coords
 
 
@@ -269,8 +269,7 @@ class BrainImage(object):
         img_ix = pixel_mesh.pop(0).flatten()
 
         # world coordinates in slice frame
-        new_img_pts[1,:] = self.resolution*(img_iy+brain_slice.y_min_pix)
-        new_img_pts[0,:] = self.resolution*(img_ix+brain_slice.x_min_pix)
+        new_img_pts = brain_slice.pixel_to_slice(np.array([img_ix, img_iy]))
 
         # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = coord_converter.slice_to_allen(new_img_pts)
