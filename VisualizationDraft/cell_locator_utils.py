@@ -253,12 +253,6 @@ class BrainImage(object):
 
         brain_slice = BrainSlice(coord_converter, self.resolution, self.allen_coords)
 
-        valid_dex = np.where(coord_converter.get_slice_mask_from_allen(self.allen_coords,
-                                                                       self.resolution))
-
-        # find the coordinates of all of the voxels in the slice frame
-        slice_coords = coord_converter.allen_to_slice(self.allen_coords[:,valid_dex[0]])
-
         # construct an empty grid to represent the 2D image of the slice
         n_img_cols = brain_slice.n_cols
         n_img_rows = brain_slice.n_rows
