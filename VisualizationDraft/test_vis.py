@@ -85,16 +85,16 @@ class ImageGenerationTest(unittest.TestCase):
         c2 = cell_locator_utils.CellLocatorTransformation(full_annotation['Markups'][0],
                                                           from_pts=True)
 
-        mask1 = c1.get_slice_mask_from_allen(brain_img.allen_coords,
+        mask1 = c1.get_slice_mask_from_allen(brain_img.brain_volume,
                                              brain_img.resolution)
-        mask2 = c2.get_slice_mask_from_allen(brain_img.allen_coords,
+        mask2 = c2.get_slice_mask_from_allen(brain_img.brain_volume,
                                              brain_img.resolution)
 
         np.testing.assert_equal(mask1, mask2)
 
         valid = np.where(mask1)
-        s_coords1 = c1.allen_to_slice(brain_img.allen_coords[:,valid[0]])
-        s_coords2 = c2.allen_to_slice(brain_img.allen_coords[:,valid[0]])
+        s_coords1 = c1.allen_to_slice(brain_img.brain_volume[:,valid[0]])
+        s_coords2 = c2.allen_to_slice(brain_img.brain_volume[:,valid[0]])
         self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*brain_img.resolution)
         self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*brain_img.resolution)
 

@@ -227,16 +227,16 @@ class BrainImage(object):
         self.nz0 = img_data.shape[0]
         self.img_data = img_data.flatten()
 
-        self.allen_coords = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
+        self.brain_volume = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
 
         mesh = np.meshgrid(resolution*np.arange(self.nx0),
                            resolution*np.arange(self.ny0),
                            resolution*np.arange(self.nz0),
                            indexing = 'ij')
 
-        self.allen_coords[2,:] = mesh.pop(2).flatten()
-        self.allen_coords[1,:] = mesh.pop(1).flatten()
-        self.allen_coords[0,:] = mesh.pop(0).flatten()
+        self.brain_volume[2,:] = mesh.pop(2).flatten()
+        self.brain_volume[1,:] = mesh.pop(1).flatten()
+        self.brain_volume[0,:] = mesh.pop(0).flatten()
         self.resolution = resolution
 
     def pixel_mask_from_CellLocatorTransformation(self, coord_converter):
@@ -251,7 +251,7 @@ class BrainImage(object):
         n_rows -- number of rows in new_img
         """
 
-        brain_slice = BrainSlice(coord_converter, self.resolution, self.allen_coords)
+        brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume)
 
         # construct an empty grid to represent the 2D image of the slice
         n_img_cols = brain_slice.n_cols
