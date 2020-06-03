@@ -364,6 +364,8 @@ class Annotation(object):
                     self._scan_mask(p[0], p[1], mask)
                 self._interesting_ix = self._clean_list(self._interesting_ix, 0)
 
+        mask[self._border_y_pixels, self._border_x_pixels] = True
+
         print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
 
