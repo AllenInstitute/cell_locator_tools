@@ -331,9 +331,9 @@ class Annotation(object):
                 r, c = self._get_cross(ix+d[0], iy+d[1], mask)
                 if len(r)>3 and len(c)>0:
                     cx = r[len(r)//2]
-                    cy = iy
+                    cy = iy+d[1]
                 elif len(c)>3 and len(r)>0:
-                    cx = ix
+                    cx = ix+d[0]
                     cy = c[len(c)//2]
 
                 if cx is not None:
