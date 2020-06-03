@@ -74,15 +74,30 @@ def draw_shape(xx, yy, out_name, n_t=100):
 
     img[ann.y_min:ann.y_min+dy,
         ann.x_min:ann.x_min+dx] = mask
+
+    y0 = ann.y_min-50
+    y1 = ann.y_min+dy+50
+    x0 = ann.x_min-50
+    x1 = ann.x_min+dx+50
+
+    blank_mask = np.zeros(mask.shape, dtype=bool)
+
+    blank_mask[ann.border_y_pixels, ann.border_x_pixels] = True
+
+    img[ann.y_min:ann.y_min+dy,
+        ann.x_min:ann.x_min+dx][blank_mask] = 2.0
+
+
     print('after ',img.sum())
-    plt.subplot(2,2,4)
+    plt.figure(figsize=(10,10))
     plt.imshow(img, zorder=1, cmap='gray')
     plt.plot(scale_x(x_s), scale_y(y_s), color='c', zorder=2, alpha=0.3, linewidth=1)
     plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
     plt.scatter(ann._cx+ann.x_min, ann._cy+ann.y_min, zorder=4, color='g')
-    print('saving %s' % out_name)
-    print(mask.sum())
-    plt.savefig(out_name.replace('png','pdf'))
+    plt.xlim((x0,x1))
+    plt.ylim((y0,y1))
+    plt.savefig(out_name)
+    plt.close()
 
     m5_control = hashlib.md5()
     with open(os.path.join('test_figs/%s' % os.path.basename(out_name)), 'rb') as in_file:
