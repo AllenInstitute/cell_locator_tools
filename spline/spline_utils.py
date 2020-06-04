@@ -127,7 +127,7 @@ class Annotation(object):
         self._spline = Spline2D(x_vals, y_vals)
         self._resolution = resolution
 
-    def _build_boundary(self, resolution):
+    def _build_boundary(self, resolution, threshold_factor):
         border_x = []
         border_y = []
         n_segments = len(self._spline.x)
@@ -140,8 +140,8 @@ class Annotation(object):
 
             # sample each curve at a fine enough resolution
             # that we will get all of the border pixels
-            t = np.arange(0.0, 1.01, 0.01)
-            d_threshold = 0.1*resolution
+            t = np.arange(0.0, 1.01, 0.1)
+            d_threshold = threshold_factor*resolution
             while d_max>d_threshold:
                 xx, yy = self._spline.values(i1, t)
                 dx = np.abs(xx[:-1]-xx[1:])
@@ -322,10 +322,10 @@ class Annotation(object):
         return out_pts
 
 
-    def get_mask(self, just_boundary=False):
+    def get_mask(self, just_boundary=False, threshold_factor=0.25):
 
         t0 = time.time()
-        self._build_boundary(self.resolution)
+        self._build_boundary(self.resolution, threshold_factor)
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
         self._interesting_ix = []

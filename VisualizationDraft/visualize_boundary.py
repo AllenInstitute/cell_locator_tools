@@ -17,7 +17,7 @@ import time
 
 import argparse
 
-def get_boundary(brain_slice, markup_pts):
+def get_boundary(brain_slice, markup_pts, threshold_factor):
     t0 = time.time()
     markup_slice_coords = brain_slice.coord_converter.c_to_slice(markup_pts)
     markup_slice_pixels = brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
@@ -26,7 +26,7 @@ def get_boundary(brain_slice, markup_pts):
                                          markup_slice_coords[1,:]-brain_slice.y_min,
                                          brain_slice.resolution*args.ds)
 
-    annotation_mask = annotation.get_mask(just_boundary=True)
+    annotation_mask = annotation.get_mask(just_boundary=True, threshold_factor=threshold_factor)
     print('full mask in %e seconds' % (time.time()-t0))
     return annotation_mask
 
@@ -65,8 +65,17 @@ if __name__ == "__main__":
         markup_pts[1,i_p] = p['y']
         markup_pts[2,i_p] = p['z']
 
-    bdry_matrix = get_boundary(brain_slice_matrix, markup_pts)
-    bdry_pts = get_boundary(brain_slice_pts, markup_pts)
+    bdry_matrix_25 = get_boundary(brain_slice_matrix, markup_pts, threshold_factor=0.9)
+    bdry_matrix = get_boundary(brain_slice_matrix, markup_pts, threshold_factor=0.05)
+    print('')
+    bdry_matrix = bdry_matrix.astype(int)*2
+    bdry_matrix[bdry_matrix_25] -=1
+
+
+    bdry_pts_25 = get_boundary(brain_slice_pts, markup_pts, threshold_factor=0.9)
+    bdry_pts = get_boundary(brain_slice_pts, markup_pts, threshold_factor=0.05)
+    bdry_pts = bdry_pts.astype(int)*2
+    bdry_pts[bdry_pts_25] -=1
 
     bdry_pts = bdry_pts.transpose()
 
@@ -76,5 +85,5 @@ if __name__ == "__main__":
     plt.subplot(1,2,2)
     plt.imshow(bdry_pts)
     plt.savefig(args.outname)
-    print(bdry_pts.shape)
-    print(bdry_matrix.shape)
+    print(bdry_pts.shape,bdry_pts.sum())
+    print(bdry_matrix.shape,bdry_matrix.sum())
