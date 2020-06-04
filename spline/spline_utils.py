@@ -152,8 +152,8 @@ class Annotation(object):
                    t = np.sort(np.concatenate([t, new_t]))
             # shave the value at t=1 because it is equivalent
             # to next segment's t=0
-            border_x.append(xx[:-1])
-            border_y.append(yy[:-1])
+            border_x.append(xx)
+            border_y.append(yy)
         border_x = np.concatenate(border_x)
         border_y = np.concatenate(border_y)
 
