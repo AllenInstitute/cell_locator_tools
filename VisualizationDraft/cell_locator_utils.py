@@ -74,12 +74,13 @@ class CellLocatorTransformation(object):
 
         # find 2-d principal axis of points in plane
         norm_to_z = np.linalg.inv(z_to_norm)
+        dsq = np.sum((slice_plane.origin-pts)**2, axis=1)
+        n = dsq.sum()
         pts_in_plane = np.dot(norm_to_z, pts.transpose())
-        xbar = pts_in_plane[0,:].sum()
-        ybar = pts_in_plane[1,:].sum()
-        xybar = np.dot(pts_in_plane[0,:],pts_in_plane[1,:])
-        xsqbar = np.dot(pts_in_plane[0,:],pts_in_plane[0,:])
-        n = pts_in_plane.shape[1]
+        xbar = np.dot(dsq, pts_in_plane[0,:])
+        ybar = np.dot(dsq, pts_in_plane[1,:])
+        xybar = np.dot(dsq, pts_in_plane[0,:]*pts_in_plane[1,:])
+        xsqbar = np.dot(dsq, pts_in_plane[0,:]**2)
         tan_theta = (xbar*ybar-n*xybar)/(xbar*xbar-n*xsqbar)
         cos_sq_theta = 1.0/(1.0+tan_theta**2)
         cos_theta = np.sqrt(cos_sq_theta)
