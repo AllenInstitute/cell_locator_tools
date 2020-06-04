@@ -73,8 +73,9 @@ class CellLocatorTransformation(object):
                                                        slice_plane.normal)
 
         # find 2-d principal axis of points in plane
+        oo = pts.sum(axis=0)/pts.shape[0]
         norm_to_z = np.linalg.inv(z_to_norm)
-        dsq = np.sum((slice_plane.origin-pts)**2, axis=1)
+        dsq = np.sum((oo-pts)**2, axis=1)
         n = dsq.sum()
         pts_in_plane = np.dot(norm_to_z, pts.transpose())
         xbar = np.dot(dsq, pts_in_plane[0,:])
