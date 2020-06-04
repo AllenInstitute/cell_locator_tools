@@ -127,7 +127,24 @@ class Annotation(object):
         self._spline = Spline2D(x_vals, y_vals)
         self._resolution = resolution
 
+    def _clean_border(self):
+        self._border_x = None
+        self._border_y = None
+        self._border_x_pixels = None
+        self._border_y_pixels = None
+        self._x_min = None
+        self._x_max = None
+        self._y_min = None
+        self._y_max = None
+        self._border_x_pixels_by_x = None
+        self._border_y_pixels_by_x = None
+        self._border_x_pixels_by_y = None
+        self._border_y_pixels_by_y = None
+        self._by_x_lookup = None
+        self._by_y_lookup = None
+
     def _build_boundary(self, resolution, threshold_factor):
+        self._clean_border()
         border_x = []
         border_y = []
         n_segments = len(self._spline.x)
