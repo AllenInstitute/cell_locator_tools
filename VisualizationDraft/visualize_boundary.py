@@ -13,10 +13,12 @@ sys.path.append(mod_dir)
 import numpy as np
 import json
 import spline_utils
+import time
 
 import argparse
 
 def get_boundary(brain_slice, markup_pts):
+    t0 = time.time()
     markup_slice_coords = brain_slice.coord_converter.c_to_slice(markup_pts)
     markup_slice_pixels = brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
 
@@ -25,6 +27,7 @@ def get_boundary(brain_slice, markup_pts):
                                          brain_slice.resolution*args.ds)
 
     annotation_mask = annotation.get_mask(just_boundary=True)
+    print('full mask in %e seconds' % (time.time()-t0))
     return annotation_mask
 
 if __name__ == "__main__":
