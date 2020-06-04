@@ -73,6 +73,7 @@ class CellLocatorTransformation(object):
                                                        slice_plane.normal)
 
         # find 2-d principal axis of points in plane
+        # rotate plane so that axis lines up with x axis
         oo = pts.sum(axis=0)/pts.shape[0]
         norm_to_z = np.linalg.inv(z_to_norm)
         dsq = np.sum((oo-pts)**2, axis=1)
