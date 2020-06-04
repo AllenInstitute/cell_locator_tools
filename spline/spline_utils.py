@@ -124,12 +124,13 @@ class Annotation(object):
         return self._resolution
 
     def __init__(self, x_vals, y_vals, resolution):
-        t0 = time.time()
         self._spline = Spline2D(x_vals, y_vals)
         self._resolution = resolution
+
+    def _build_boundary(self, resolution):
         border_x = []
         border_y = []
-        n_segments = len(x_vals)
+        n_segments = len(self._spline.x)
         for i1 in range(n_segments):
             if i1<n_segments-1:
                 i2 = i1+1
@@ -140,7 +141,7 @@ class Annotation(object):
             # sample each curve at a fine enough resolution
             # that we will get all of the border pixels
             t = np.arange(0.0, 1.01, 0.01)
-            d_threshold = 0.1*self.resolution
+            d_threshold = 0.1*resolution
             while d_max>d_threshold:
                 xx, yy = self._spline.values(i1, t)
                 dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
@@ -210,8 +211,6 @@ class Annotation(object):
         for iy in np.unique(self._border_y_pixels_by_y):
             valid = np.where(self._border_y_pixels_by_y==iy)
             self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
-
-        print('%e seconds' % (time.time()-t0))
 
     def _get_cross(self, ix, iy, mask):
 
@@ -317,6 +316,7 @@ class Annotation(object):
     def get_mask(self, just_boundary=False):
 
         t0 = time.time()
+        self._build_boundary(self.resolution)
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
         self._interesting_ix = []
