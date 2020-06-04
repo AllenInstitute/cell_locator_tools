@@ -186,13 +186,14 @@ class Annotation(object):
                           (self._border_y_pixels[:-1]-self._border_y_pixels[1:])**2)
 
         #print(np.unique(d_pixel,return_counts=True))
-
+        print('n_boundary %d' % (len(self._border_x_pixels)))
         valid = np.where(d_pixel>1.0e-6)
         self._border_x_pixels = self._border_x_pixels[valid]
         self._border_y_pixels = self._border_y_pixels[valid]
         #print(len(self._border_x_pixels))
         #print(self._border_x_pixels.dtype)
         #print(self._border_y_pixels.dtype)
+        print('n_boundary corrected %d' % (len(self._border_x_pixels)))
 
         sorted_dex = np.argsort(self._border_x_pixels)
         self._border_x_pixels_by_x = self._border_x_pixels[sorted_dex]
