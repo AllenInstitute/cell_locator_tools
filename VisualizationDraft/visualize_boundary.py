@@ -16,6 +16,17 @@ import spline_utils
 
 import argparse
 
+def get_boundary(brain_slice, markup_pts):
+    markup_slice_coords = brain_slice.coord_converter.c_to_slice(markup_pts)
+    markup_slice_pixels = brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
+
+    annotation = spline_utils.Annotation(markup_slice_coords[0,:]-brain_slice.x_min,
+                                         markup_slice_coords[1,:]-brain_slice.y_min,
+                                         brain_slice.resolution*args.ds)
+
+    annotation_mask = annotation.get_mask(just_boundary=True)
+    return annotation_mask
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--annotation', type=str, default=None)
@@ -34,8 +45,13 @@ if __name__ == "__main__":
 
     brain_img = cell_locator_utils.BrainImage(img_data, resolution)
     (slice_img,
-     brain_slice) = brain_img.slice_img_from_annotation(args.annotation,
-                                                        from_pts=args.pts)
+     brain_slice_matrix) = brain_img.slice_img_from_annotation(args.annotation,
+                                                               from_pts=False)
+
+    (slice_img,
+     brain_slice_pts) = brain_img.slice_img_from_annotation(args.annotation,
+                                                            from_pts=True)
+
 
     with open(args.annotation, 'rb') as in_file:
         full_annotation = json.load(in_file)
@@ -46,29 +62,16 @@ if __name__ == "__main__":
         markup_pts[1,i_p] = p['y']
         markup_pts[2,i_p] = p['z']
 
-    markup_slice_coords = brain_slice.coord_converter.c_to_slice(markup_pts)
-    print(np.abs(markup_slice_coords[2,:]).max())
-    markup_slice_pixels = brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
+    bdry_matrix = get_boundary(brain_slice_matrix, markup_pts)
+    bdry_pts = get_boundary(brain_slice_pts, markup_pts)
 
-    print('x ',markup_slice_coords[0,:])
-    print(brain_slice.x_min)
-    print('y ',markup_slice_coords[1,:])
-    print(brain_slice.y_min)
-    print('')
-
-    annotation = spline_utils.Annotation(markup_slice_coords[0,:]-brain_slice.x_min,
-                                         markup_slice_coords[1,:]-brain_slice.y_min,
-                                         brain_slice.resolution*args.ds)
-
-    annotation_mask = annotation.get_mask(just_boundary=True)
-    #annotation_mask = np.zeros(raw_annotation_mask.shape, dtype=bool)
-    #annotation_mask = raw_annotation_mask
-    #for ii in range(raw_annotation_mask.shape[0]):
-    #    annotation_mask[raw_annotation_mask.shape[0]-1-ii,:] = raw_annotation_mask[ii,:]
-
-    #if args.pts:
-    #    annotation_mask = annotation_mask.transpose()
+    bdry_pts = bdry_pts.transpose()
 
     plt.figure(figsize=(10,10))
-    plt.imshow(annotation_mask)
+    plt.subplot(1,2,1)
+    plt.imshow(bdry_matrix)
+    plt.subplot(1,2,2)
+    plt.imshow(bdry_pts)
     plt.savefig(args.outname)
+    print(bdry_pts.shape)
+    print(bdry_matrix.shape)
