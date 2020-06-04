@@ -144,7 +144,10 @@ class Annotation(object):
             d_threshold = 0.1*resolution
             while d_max>d_threshold:
                 xx, yy = self._spline.values(i1, t)
-                dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
+                dx = np.abs(xx[:-1]-xx[1:])
+                dy = np.abs(yy[:-1]-yy[1:])
+                dist = np.where(dx>dy,dx,dy)
+                #dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
                 d_max = dist.max()
                 if d_max>d_threshold:
                    bad_dex = np.where(dist>d_threshold)[0]
@@ -159,8 +162,16 @@ class Annotation(object):
         self._border_y = border_y
 
         # convert to integer pixel values
-        self._border_x_pixels = np.round(border_x/resolution).astype(int)
-        self._border_y_pixels = np.round(border_y/resolution).astype(int)
+        self._border_x_pixels = border_x/resolution
+        self._border_x_pixels = np.where(self._border_x_pixels>0,
+                                         np.ceil(self._border_x_pixels),
+                                         np.floor(self._border_x_pixels)).astype(int)
+
+        self._border_y_pixels = border_y/resolution
+        self._border_y_pixels = np.where(self._border_y_pixels>0,
+                                         np.ceil(self._border_y_pixels),
+                                         np.floor(self._border_y_pixels)).astype(int)
+
         #print(len(self._border_x_pixels))
 
         x_min = self._border_x_pixels.min()
