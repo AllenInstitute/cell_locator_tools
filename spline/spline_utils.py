@@ -140,7 +140,7 @@ class Annotation(object):
             # sample each curve at a fine enough resolution
             # that we will get all of the border pixels
             t = np.arange(0.0, 1.01, 0.01)
-            d_threshold = 0.25*self.resolution
+            d_threshold = 0.1*self.resolution
             while d_max>d_threshold:
                 xx, yy = self._spline.values(i1, t)
                 dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
