@@ -313,7 +313,7 @@ class Annotation(object):
         return out_pts
 
 
-    def get_mask(self):
+    def get_mask(self, just_boundary=False):
 
         t0 = time.time()
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
@@ -348,21 +348,22 @@ class Annotation(object):
         #print(c)
 
         self.n_scans = 1
-        self._scan_mask(cx, cy, mask)
-        while True:
-            if len(self._interesting_ix) == 0 and len(self._interesting_iy)==0:
-                break
-            if len(self._interesting_ix)>0:
-                for ii in range(len(self._interesting_ix)-1,-1,-1):
-                    p = self._interesting_ix.pop(ii)
-                    self._scan_mask(p[0], p[1], mask)
-                self._interesting_iy = self._clean_list(self._interesting_iy, 1)
+        if not just_boundary:
+            self._scan_mask(cx, cy, mask)
+            while True:
+                if len(self._interesting_ix) == 0 and len(self._interesting_iy)==0:
+                    break
+                if len(self._interesting_ix)>0:
+                    for ii in range(len(self._interesting_ix)-1,-1,-1):
+                        p = self._interesting_ix.pop(ii)
+                        self._scan_mask(p[0], p[1], mask)
+                    self._interesting_iy = self._clean_list(self._interesting_iy, 1)
 
-            if len(self._interesting_iy)>0:
-                for ii in range(len(self._interesting_iy)-1,-1,-1):
-                    p = self._interesting_iy.pop(ii)
-                    self._scan_mask(p[0], p[1], mask)
-                self._interesting_ix = self._clean_list(self._interesting_ix, 0)
+                if len(self._interesting_iy)>0:
+                    for ii in range(len(self._interesting_iy)-1,-1,-1):
+                        p = self._interesting_iy.pop(ii)
+                        self._scan_mask(p[0], p[1], mask)
+                    self._interesting_ix = self._clean_list(self._interesting_ix, 0)
 
         mask[self._border_y_pixels, self._border_x_pixels] = True
 
