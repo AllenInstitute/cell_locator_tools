@@ -149,6 +149,7 @@ class Annotation(object):
                 dist = np.where(dx>dy,dx,dy)
                 #dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
                 d_max = dist.max()
+                #print('   d_max ',d_max/resolution)
                 if d_max>d_threshold:
                    bad_dex = np.where(dist>d_threshold)[0]
                    new_t = t[bad_dex]+0.5*(t[bad_dex+1]-t[bad_dex])
