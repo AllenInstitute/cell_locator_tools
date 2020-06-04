@@ -150,7 +150,7 @@ class Annotation(object):
                    bad_dex = np.where(dist>d_threshold)[0]
                    new_t = t[bad_dex]+0.5*(t[bad_dex+1]-t[bad_dex])
                    t = np.sort(np.concatenate([t, new_t]))
-            # shave the value at t=0 because it is equivalent
+            # shave the value at t=1 because it is equivalent
             # to next segment's t=0
             border_x.append(xx[:-1])
             border_y.append(yy[:-1])
