@@ -154,22 +154,23 @@ class Annotation(object):
             else:
                 i2 = 0
             d_max = 10.0*resolution
-            t_arr = []
-            tt = 0.0
-            set_to_one = False
-            while tt<=1.0:
-                t_arr.append(tt)
-                dvdt = self._spline.derivatives(i1, tt)
-                d = np.sqrt(dvdt[0]**2+dvdt[1]**2)
-                dt = threshold_factor*resolution/d
-                if tt<1.0 and tt+dt>1.0 and not set_to_one:
-                    tt = 1.0
-                    set_to_one = True
-                else:
-                    tt += dt
 
-            t_arr = np.array(t_arr)
-            xx, yy = self._spline.values(i1,t_arr)
+            # sample each curve at a fine enough resolution
+            # that we will get all of the border pixels
+            t = np.arange(0.0, 1.01, 0.1)
+            d_threshold = threshold_factor*resolution
+            while d_max>d_threshold:
+                xx, yy = self._spline.values(i1, t)
+                dx = np.abs(xx[:-1]-xx[1:])
+                dy = np.abs(yy[:-1]-yy[1:])
+                dist = np.where(dx>dy,dx,dy)
+                #dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
+                d_max = dist.max()
+                #print('   d_max ',d_max/resolution)
+                if d_max>d_threshold:
+                   bad_dex = np.where(dist>d_threshold)[0]
+                   new_t = t[bad_dex]+0.5*(t[bad_dex+1]-t[bad_dex])
+                   t = np.sort(np.concatenate([t, new_t]))
             border_x.append(xx)
             border_y.append(yy)
         border_x = np.concatenate(border_x)
