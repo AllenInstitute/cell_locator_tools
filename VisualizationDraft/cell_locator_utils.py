@@ -67,9 +67,26 @@ class CellLocatorTransformation(object):
         pts = []
         for obj in markup['Points']:
             pts.append(np.array([obj['x'], obj['y'], obj['z']]))
+        pts = np.array(pts)
         slice_plane = planar_geometry.Plane.plane_from_many_points(pts)
         z_to_norm = planar_geometry.rotate_v_into_w_3d(np.array([0.0, 0.0, 1.0]),
                                                        slice_plane.normal)
+
+        # find 2-d principal axis of points in plane
+        norm_to_z = np.linalg.inv(z_to_norm)
+        pts_in_plane = np.dot(norm_to_z, pts.transpose())
+        xbar = pts_in_plane[0,:].sum()
+        ybar = pts_in_plane[1,:].sum()
+        xybar = np.dot(pts_in_plane[0,:],pts_in_plane[1,:])
+        xsqbar = np.dot(pts_in_plane[0,:],pts_in_plane[0,:])
+        n = pts_in_plane.shape[1]
+        tan_theta = (xbar*ybar-n*xybar)/(xbar*xbar-n*xsqbar)
+        cos_sq_theta = 1.0/(1.0+tan_theta**2)
+        cos_theta = np.sqrt(cos_sq_theta)
+        sin_theta = np.sign(tan_theta)*np.sqrt(1.0-cos_sq_theta)
+        v = np.array([cos_theta, sin_theta, 0.0])
+        rot_plane = planar_geometry.rotate_v_into_w_3d(v, np.array([1.0, 0.0, 0.0]))
+        z_to_norm = np.dot(z_to_norm, rot_plane)
 
         slice_to_c = np.zeros((4,4), dtype=float)
         slice_to_c[:3, :3] = z_to_norm
@@ -77,6 +94,7 @@ class CellLocatorTransformation(object):
         rotation_dot_origin = np.dot(z_to_norm, slice_plane.origin)
         for ii in range(3):
             slice_to_c[ii, 3] += slice_plane.origin[ii]
+
         return slice_to_c
 
     def allen_to_c(self, pts):
