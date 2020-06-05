@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     #plt.imshow(slice_img)
 
-    #plt.subplot(1,2,2)
+    plt.subplot(2,2,1)
 
     val = slice_img.max()+2.0
 
@@ -101,10 +101,12 @@ if __name__ == "__main__":
     slice_img[x0:x1, y0:y1][t_mask] += val
     slice_img[x0:x1, y0:y1][t_mask] *= 0.5
 
+
     print('img sum again ',slice_img.sum())
     #slice_img[ann_mask_pix[1,:], ann_mask_pix[0,:]][ann_mask] *= 0.5
     plt.imshow(slice_img,zorder=1)
-    plt.scatter(markup_slice_pixels[0,:], markup_slice_pixels[1,:], color='r', zorder=2, s=0.25)
+    plt.scatter(markup_slice_pixels[0,:], markup_slice_pixels[1,:],
+                color='r', zorder=2, s=1, marker='o')
 
     plt.scatter(corner_pt[0,:], corner_pt[1,:], zorder=4, color='r', s=15)
 
@@ -122,5 +124,28 @@ if __name__ == "__main__":
     px = brain_slice.slice_to_pixel(p)
     print(px)
     print(annotation.y_max)
+
+
+    plt.subplot(2,2,2)
+
+    sp_pix = annotation.wc_to_pixel(np.array([annotation._spline.x, annotation._spline.y]))
+
+    ann_mask = ann_mask.astype(int)
+    print('mask sum ',ann_mask.sum(),ann_mask.max())
+    for ix, iy in zip(sp_pix[0,:], sp_pix[1,:]):
+        ann_mask[iy,ix] = 2
+    print('mask sum ',ann_mask.sum(),ann_mask.max())
+    plt.imshow(ann_mask)
+
+    plt.subplot(2,2,4)
+    t_arr = np.arange(0,1.001,0.01)
+    bdry_x = []
+    bdry_y = []
+    for ii in range(len(annotation._spline.x)):
+        xx, yy = annotation._spline.values(ii,t_arr)
+        bdry_x.append(xx)
+        bdry_y.append(yy)
+    plt.plot(np.concatenate(bdry_x), np.concatenate(bdry_y), color='c', zorder=0)
+    plt.scatter(annotation._spline.x, annotation._spline.y, color='r', zorder=1)
 
     plt.savefig(args.outname)
