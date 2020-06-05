@@ -207,19 +207,10 @@ class Annotation(object):
         self._x_max = self._border_x.max()
         self._y_max = self._border_y.max()
 
-        border_x -= self.x_min
-        border_y -= self.y_min
-
         # convert to integer pixel values
-        self._border_x_pixels = border_x/resolution
-        self._border_x_pixels = np.where(self._border_x_pixels>0,
-                                         np.ceil(self._border_x_pixels),
-                                         np.floor(self._border_x_pixels)).astype(int)
-
-        self._border_y_pixels = border_y/resolution
-        self._border_y_pixels = np.where(self._border_y_pixels>0,
-                                         np.ceil(self._border_y_pixels),
-                                         np.floor(self._border_y_pixels)).astype(int)
+        pixel_coords = self.wc_to_pixel(np.array([border_x, border_y]))
+        self._border_x_pixels = pixel_coords[0,:]
+        self._border_y_pixels = pixel_coords[1,:]
 
         self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
         self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
