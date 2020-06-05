@@ -164,9 +164,7 @@ class Annotation(object):
                 dx = np.abs(xx[:-1]-xx[1:])
                 dy = np.abs(yy[:-1]-yy[1:])
                 dist = np.where(dx>dy,dx,dy)
-                #dist = np.sqrt((xx[:-1]-xx[1:])**2 + (yy[:-1]-yy[1:])**2)
                 d_max = dist.max()
-                #print('   d_max ',d_max/resolution)
                 if d_max>d_threshold:
                    bad_dex = np.where(dist>d_threshold)[0]
                    new_t = t[bad_dex]+0.5*(t[bad_dex+1]-t[bad_dex])
@@ -190,8 +188,6 @@ class Annotation(object):
                                          np.ceil(self._border_y_pixels),
                                          np.floor(self._border_y_pixels)).astype(int)
 
-        #print(len(self._border_x_pixels))
-
         x_min = self._border_x_pixels.min()
         y_min = self._border_y_pixels.min()
         x_max = self._border_x_pixels.max()
@@ -213,14 +209,11 @@ class Annotation(object):
         d_pixel[:-1] = np.sqrt((self._border_x_pixels[:-1]-self._border_x_pixels[1:])**2 +
                           (self._border_y_pixels[:-1]-self._border_y_pixels[1:])**2)
 
-        #print(np.unique(d_pixel,return_counts=True))
         print('n_boundary %d' % (len(self._border_x_pixels)))
         valid = np.where(d_pixel>1.0e-6)
         self._border_x_pixels = self._border_x_pixels[valid]
         self._border_y_pixels = self._border_y_pixels[valid]
-        #print(len(self._border_x_pixels))
-        #print(self._border_x_pixels.dtype)
-        #print(self._border_y_pixels.dtype)
+
         print('n_boundary corrected %d' % (len(self._border_x_pixels)))
 
         sorted_dex = np.argsort(self._border_x_pixels)
@@ -372,8 +365,6 @@ class Annotation(object):
 
         self._cx = cx
         self._cy = cy
-        #print(r)
-        #print(c)
 
         self.n_scans = 1
         if not just_boundary:
