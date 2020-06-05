@@ -56,15 +56,23 @@ def draw_shape(xx, yy, out_name, n_t=100):
 
     img[iy0:iy0+dy, ix0:ix0+dx][blank_mask] = 2.0
 
+    xy = np.array([xx,yy])
+    pix = ann.wc_to_pixel(xy)
+
 
     print('after ',img.sum())
     plt.figure(figsize=(10,10))
     plt.imshow(img, zorder=1, cmap='gray')
     plt.plot(scale_x(x_s), scale_y(y_s), color='c', zorder=2, alpha=0.3, linewidth=1)
-    plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
+    plt.scatter(ix0+pix[0,:], iy0+pix[1,:], color='r', zorder=3, alpha=0.5)
     #plt.scatter(ann._cx+ann.x_min, ann._cy+ann.y_min, zorder=4, color='g')
-    #plt.xlim((x0,x1))
-    #plt.ylim((y0,y1))
+    x0 = max(0, ix0+ann.border_x_pixels.min()-50)
+    x1 = ix0+ann.border_x_pixels.max()+50
+    y0 = max(iy0+ann.border_y_pixels.min()-50, 0)
+    y1 = iy0+ann.border_y_pixels.max()+50
+
+    plt.xlim((x0, x1))
+    plt.ylim((y0, y1))
     plt.savefig(out_name)
     plt.close()
 
