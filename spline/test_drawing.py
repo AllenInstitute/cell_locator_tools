@@ -53,6 +53,9 @@ def draw_shape(xx, yy, out_name, n_t=100):
 
     plt.subplot(2,2,3)
     ann = Annotation(xx, yy, resolution)
+
+    mask = ann.get_mask()
+
     plt.scatter(ann._border_x_pixels_by_x, ann._border_y_pixels_by_x)
 
     cx = -ann.x_min+ann._spline.x.sum()/(len(ann._spline.x)*resolution)
@@ -64,8 +67,6 @@ def draw_shape(xx, yy, out_name, n_t=100):
     plt.scatter(-ann.x_min+ann._spline.x/ann.resolution,
                 -ann.y_min+ann._spline.y/ann.resolution,
                 c='c')
-
-    mask = ann.get_mask()
 
     dx = min(mask.shape[1], img.shape[1]-ann.x_min)
     dy = min(mask.shape[0], img.shape[0]-ann.y_min)
