@@ -301,16 +301,6 @@ class Annotation(object):
 
         return interesting_row, interesting_col
 
-
-    def _is_border(self, ix, iy):
-        valid_x = np.where(self.border_x_pixels==ix)
-        if len(valid_x[0])==0:
-            return False
-        valid_y = np.where(self.border_y_pixels[valid_x]==iy)
-        if len(valid_y[0])==0:
-            return False
-        return True
-
     def _scan_mask(self, ix, iy, mask):
         self.n_scans += 1
 
@@ -331,13 +321,21 @@ class Annotation(object):
         return None
 
     def _clean_list(self, raw_pts, axis):
-        for ii in range(len(raw_pts)-1,-1,-1):
-            if self._is_border(raw_pts[ii][0],raw_pts[ii][1]):
-                raw_pts.pop(ii)
         pts = np.zeros((len(raw_pts), 2), dtype=int)
         for ii, pp in enumerate(raw_pts):
             pts[ii,0] = pp[0]
             pts[ii,1] = pp[1]
+
+        to_keep = np.ones(pts.shape[0], dtype=bool)
+        for ix in np.unique(pts[:,0]):
+            valid_b = np.where(self.border_x_pixels==ix)[0]
+            valid_p = np.where(pts[:,0]==ix)[0]
+            b_y = set(self.border_y_pixels[valid_b])
+            for ii in valid_p:
+                if pts[ii,1] in b_y:
+                    to_keep[ii] = False
+
+        pts = pts[to_keep,:]
 
         sorted_dex = np.argsort(pts[:,axis])
         pts = pts[sorted_dex,:]
