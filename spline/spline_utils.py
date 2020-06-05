@@ -302,6 +302,15 @@ class Annotation(object):
         return interesting_row, interesting_col
 
 
+    def _is_border(self, ix, iy):
+        valid_x = np.where(self.border_x_pixels==ix)
+        if len(valid_x[0])==0:
+            return False
+        valid_y = np.where(self.border_y_pixels[valid_x]==iy)
+        if len(valid_y[0])==0:
+            return False
+        return True
+
     def _scan_mask(self, ix, iy, mask):
         self.n_scans += 1
 
@@ -322,6 +331,9 @@ class Annotation(object):
         return None
 
     def _clean_list(self, raw_pts, axis):
+        for ii in range(len(raw_pts)-1,-1,-1):
+            if self._is_border(raw_pts[ii][0],raw_pts[ii][1]):
+                raw_pts.pop(ii)
         pts = np.zeros((len(raw_pts), 2), dtype=int)
         for ii, pp in enumerate(raw_pts):
             pts[ii,0] = pp[0]
