@@ -125,6 +125,7 @@ class Annotation(object):
 
     def __init__(self, x_vals, y_vals):
         self._spline = Spline2D(x_vals, y_vals)
+        self._clean_border()
 
     def wc_to_pixel(self, xy):
         """
