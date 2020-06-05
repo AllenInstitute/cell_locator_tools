@@ -342,9 +342,6 @@ class Annotation(object):
         self._interesting_ix = []
         self._interesting_iy = []
 
-        #centroid_x = np.round(self._spline.x.sum()/(len(self._spline.x)*self.resolution)).astype(int)
-        #centroid_y = np.round(self._spline.y.sum()/(len(self._spline.y)*self.resolution)).astype(int)
-
         cx = None
         cy = None
         for ix, iy in zip(self._border_x_pixels_by_x, self._border_x_pixels_by_y):
