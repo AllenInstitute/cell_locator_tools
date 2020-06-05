@@ -160,6 +160,7 @@ class Annotation(object):
         self._by_x_lookup = None
         self._by_y_lookup = None
         self._resolution = None
+        self._border_interpolator = None
 
     def _build_boundary(self, resolution, threshold_factor):
         self._clean_border()
@@ -167,6 +168,7 @@ class Annotation(object):
         border_x = []
         border_y = []
         n_segments = len(self._spline.x)
+        self._border_interpolator = []
         for i1 in range(n_segments):
             if i1<n_segments-1:
                 i2 = i1+1
@@ -176,18 +178,21 @@ class Annotation(object):
 
             # sample each curve at a fine enough resolution
             # that we will get all of the border pixels
-            t = np.arange(0.0, 1.01, 0.1)
+            tt = np.arange(0.0, 1.01, 0.1)
             d_threshold = threshold_factor*resolution
             while d_max>d_threshold:
-                xx, yy = self._spline.values(i1, t)
+                xx, yy = self._spline.values(i1, tt)
                 dx = np.abs(xx[:-1]-xx[1:])
                 dy = np.abs(yy[:-1]-yy[1:])
                 dist = np.where(dx>dy,dx,dy)
                 d_max = dist.max()
                 if d_max>d_threshold:
                    bad_dex = np.where(dist>d_threshold)[0]
-                   new_t = t[bad_dex]+0.5*(t[bad_dex+1]-t[bad_dex])
-                   t = np.sort(np.concatenate([t, new_t]))
+                   new_t = tt[bad_dex]+0.5*(tt[bad_dex+1]-tt[bad_dex])
+                   tt = np.sort(np.concatenate([tt, new_t]))
+            self._border_interpolator.append({'t':tt,
+                                              'x':xx,
+                                              'y':yy})
             border_x.append(xx)
             border_y.append(yy)
         border_x = np.concatenate(border_x)
