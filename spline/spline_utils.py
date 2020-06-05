@@ -123,9 +123,26 @@ class Annotation(object):
     def resolution(self):
         return self._resolution
 
-    def __init__(self, x_vals, y_vals, resolution):
+    def __init__(self, x_vals, y_vals):
         self._spline = Spline2D(x_vals, y_vals)
-        self._resolution = resolution
+
+    def wc_to_pixel(self, xy):
+        """
+        xy is a 2xN numpy array
+        """
+        pixel_coords = np.zeros(xy.shape, dtype=int)
+        pixel_coords[0,:] = np.round((xy[0,:]-self.x_min)/self.resolution).astype(int)
+        pixel_coords[1,:] = np.round((xy[1,:]-self.y_min)/self.resolution).astype(int)
+        return pixel_coords
+
+    def pixel_to_wc(self, pixel):
+        """
+        pixel is a 2xN numpy array
+        """
+        wc = np.zeros(pixel.shape, dtype=int)
+        wc[0,:] = self.x_min+pixel[0,:]*self.resolution
+        wc[1,:] = self.y_min+pixel[1,:]*self.resolution
+        return wc
 
     def _clean_border(self):
         self._border_x = None
@@ -142,9 +159,11 @@ class Annotation(object):
         self._border_y_pixels_by_y = None
         self._by_x_lookup = None
         self._by_y_lookup = None
+        self._resolution = None
 
     def _build_boundary(self, resolution, threshold_factor):
         self._clean_border()
+        self._resolution = resolution
         border_x = []
         border_y = []
         n_segments = len(self._spline.x)
@@ -177,6 +196,14 @@ class Annotation(object):
         self._border_x = border_x
         self._border_y = border_y
 
+        self._x_min = self._border_x.min()
+        self._y_min = self._border_y.min()
+        self._x_max = self._border_x.max()
+        self._y_max = self._border_y.max()
+
+        border_x -= self.x_min
+        border_y -= self.y_min
+
         # convert to integer pixel values
         self._border_x_pixels = border_x/resolution
         self._border_x_pixels = np.where(self._border_x_pixels>0,
@@ -188,20 +215,8 @@ class Annotation(object):
                                          np.ceil(self._border_y_pixels),
                                          np.floor(self._border_y_pixels)).astype(int)
 
-        x_min = self._border_x_pixels.min()
-        y_min = self._border_y_pixels.min()
-        x_max = self._border_x_pixels.max()
-        y_max = self._border_y_pixels.max()
-
-        self._border_x_pixels -= x_min
-        self._border_y_pixels -= y_min
-        self._n_x_pixels = x_max-x_min+1
-        self._n_y_pixels = y_max-y_min+1
-
-        self._x_min = x_min
-        self._x_max = x_max
-        self._y_min = y_min
-        self._y_max = y_max
+        self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
+        self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
 
         # cull pixels that are identical to their neighbor
         n_border = len(self._border_x_pixels)
@@ -333,7 +348,9 @@ class Annotation(object):
         return out_pts
 
 
-    def get_mask(self, just_boundary=False, threshold_factor=0.25):
+    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
+
+        self._resolution = resolution
 
         t0 = time.time()
         self._build_boundary(self.resolution, threshold_factor)

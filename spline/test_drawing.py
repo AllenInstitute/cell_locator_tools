@@ -18,63 +18,32 @@ def draw_shape(xx, yy, out_name, n_t=100):
     y_s = np.zeros(n_t*len(xx))
 
     t = np.arange(0, 1.0001, 1.0/(n_t-1))
-    #assert len(t) == len(xx)
     for ii in range(len(xx)):
         for i_t in range(len(t)):
             pt = spline.values(ii, t[i_t])
             x_s[ii*len(t)+i_t] = pt[0]
             y_s[ii*len(t)+i_t] = pt[1]
 
-    v0 = spline.values(0,0)
-    v1 = spline.values(len(xx)-1,1)
-
-    d0 = spline.derivatives(0,0)
-    d1 = spline.derivatives(len(xx)-1,1)
-
-    plt.figure(figsize=(10,10))
-    plt.subplot(2,2,1)
-    plt.plot(x_s, y_s, c='b', zorder=1)
-    plt.scatter(xx, yy, c='r', zorder=2, alpha=0.4)
-
     resolution = 15.0/1000.0
-    plt.xlim(0,15)
-    plt.ylim(0,15)
 
     def scale_x(x_v):
         return x_v/resolution
     def scale_y(y_v):
         return y_v/resolution
 
-    plt.subplot(2,2,2)
     img = np.zeros((1000,1000), dtype=float)
-    plt.imshow(img, zorder=1, cmap='gray')
-    plt.plot(scale_x(x_s), scale_y(y_s), color='b', zorder=2)
-    plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
-
-    plt.subplot(2,2,3)
-    ann = Annotation(xx, yy, resolution)
-
-    mask = ann.get_mask()
-
-    plt.scatter(ann._border_x_pixels_by_x, ann._border_y_pixels_by_x)
-
-    cx = -ann.x_min+ann._spline.x.sum()/(len(ann._spline.x)*resolution)
-    cy = -ann.y_min+ann._spline.y.sum()/(len(ann._spline.y)*resolution)
-
-    #cx, cy = ann.get_mask()
-
-    plt.scatter([cx], [cy], color='r')
-    plt.scatter(-ann.x_min+ann._spline.x/ann.resolution,
-                -ann.y_min+ann._spline.y/ann.resolution,
-                c='c')
+    ann = Annotation(xx, yy)
+    mask = ann.get_mask(resolution)
 
     dx = min(mask.shape[1], img.shape[1]-ann.x_min)
     dy = min(mask.shape[0], img.shape[0]-ann.y_min)
 
     print('before ',img.sum())
 
-    img[ann.y_min:ann.y_min+dy,
-        ann.x_min:ann.x_min+dx] = mask
+    ix0 = np.round(ann.x_min/resolution).astype(int)
+    iy0 = np.round(ann.y_min/resolution).astype(int)
+
+    img[iy0:iy0+dy, ix0:ix0+dx] = mask
 
     y0 = ann.y_min-50
     y1 = ann.y_min+dy+50
@@ -85,8 +54,7 @@ def draw_shape(xx, yy, out_name, n_t=100):
 
     blank_mask[ann.border_y_pixels, ann.border_x_pixels] = True
 
-    img[ann.y_min:ann.y_min+dy,
-        ann.x_min:ann.x_min+dx][blank_mask] = 2.0
+    img[iy0:iy0+dy, ix0:ix0+dx][blank_mask] = 2.0
 
 
     print('after ',img.sum())
@@ -94,9 +62,9 @@ def draw_shape(xx, yy, out_name, n_t=100):
     plt.imshow(img, zorder=1, cmap='gray')
     plt.plot(scale_x(x_s), scale_y(y_s), color='c', zorder=2, alpha=0.3, linewidth=1)
     plt.scatter(scale_x(xx), scale_y(yy), color='r', zorder=3, alpha=0.5)
-    plt.scatter(ann._cx+ann.x_min, ann._cy+ann.y_min, zorder=4, color='g')
-    plt.xlim((x0,x1))
-    plt.ylim((y0,y1))
+    #plt.scatter(ann._cx+ann.x_min, ann._cy+ann.y_min, zorder=4, color='g')
+    #plt.xlim((x0,x1))
+    #plt.ylim((y0,y1))
     plt.savefig(out_name)
     plt.close()
 
