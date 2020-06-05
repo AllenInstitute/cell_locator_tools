@@ -55,28 +55,25 @@ if __name__ == "__main__":
     print(brain_slice.y_min)
     print('')
 
-    annotation = spline_utils.Annotation(markup_slice_coords[0,:]-brain_slice.x_min,
-                                         markup_slice_coords[1,:]-brain_slice.y_min)
+    #annotation = spline_utils.Annotation(markup_slice_coords[0,:]-brain_slice.x_min,
+    #                                     markup_slice_coords[1,:]-brain_slice.y_min)
 
 
-    #annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:])
+    annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:])
 
 
     corner_pt = brain_slice.slice_to_pixel(np.array([[brain_slice.x_min],[brain_slice.y_min]]))
 
-    #np.testing.assert_equal(annotation._spline.x, markup_slice_coords[0,:]-brain_slice.x_min)
-    #np.testing.assert_equal(annotation._spline.y, markup_slice_coords[1,:]-brain_slice.y_min)
+    ann_mask = annotation.get_mask(brain_slice.resolution)
+    mesh = np.meshgrid(np.arange(ann_mask.shape[0]), np.arange(ann_mask.shape[1]))
+    ann_mask_pix = np.array([mesh[0].flatten(), mesh[1].flatten()])
+    ann_mask_wc = annotation.pixel_to_wc(ann_mask_pix)
+    ann_mask_pix = brain_slice.slice_to_pixel(ann_mask_wc)
 
-    raw_annotation_mask = annotation.get_mask(brain_slice.resolution)
-    annotation_mask = np.zeros(raw_annotation_mask.shape, dtype=bool)
-    #annotation_mask = raw_annotation_mask
-    for ii in range(raw_annotation_mask.shape[0]):
-        annotation_mask[raw_annotation_mask.shape[0]-1-ii,:] = raw_annotation_mask[ii,:]
+    t_mask = np.zeros(ann_mask.shape, dtype=bool)
 
-    #print(annotation.x_min,slice_img.shape[1])
-    #print(annotation.y_min,slice_img.shape[0])
-
-    
+    for ii in range(ann_mask.shape[0]):
+        t_mask[ann_mask.shape[0]-1-ii,:] = ann_mask[ii,:]
 
     plt.figure(figsize=(15,15))
     plt.subplot(1,2,1)
@@ -86,26 +83,31 @@ if __name__ == "__main__":
     plt.subplot(1,2,2)
 
     val = slice_img.max()+2.0
-    dx = annotation_mask.shape[1]
-    dy = annotation_mask.shape[0]
-    minx = np.round(annotation.x_min/brain_slice.resolution).astype(int)
-    maxx = minx+dx
-    ymx = np.round(annotation.y_max/brain_slice.resolution).astype(int)
-    miny = brain_slice.n_rows-1-ymx #annotation.y_min #brain_slice.n_rows-1+brain_slice.y_min_pix-annotation.y_min
-    maxy=miny+dy
 
     print('val ',val)
-    print('mask sum ',annotation_mask.sum())
-    slice_img[miny:maxy,minx:maxx][annotation_mask] += val
-    slice_img[miny:maxy,minx:maxx][annotation_mask] *= 0.5
+    print('mask sum ',ann_mask.sum())
+    print('img sum ',slice_img.sum())
+    print(ann_mask_pix.shape)
+    print(ann_mask_pix[0,:].min(),ann_mask_pix[0,:].max())
+    print(ann_mask_pix[1,:].min(),ann_mask_pix[1,:].max())
+    print(ann_mask.shape)
+    print(slice_img.shape)
+
+    x0 = ann_mask_pix[0,:].min()
+    x1 = ann_mask_pix[0,:].max()+1
+    y0 = ann_mask_pix[1,:].min()
+    y1 = ann_mask_pix[1,:].max()+1
+
+    slice_img[x0:x1, y0:y1][t_mask] += val
+    slice_img[x0:x1, y0:y1][t_mask] *= 0.5
+
+    print('img sum again ',slice_img.sum())
+    #slice_img[ann_mask_pix[1,:], ann_mask_pix[0,:]][ann_mask] *= 0.5
     plt.imshow(slice_img,zorder=1)
     plt.scatter(markup_slice_pixels[0,:], markup_slice_pixels[1,:], color='r', zorder=2, s=0.25)
 
-    plt.scatter([minx],[miny], color='y', zorder=3, s=10)
+    plt.scatter(corner_pt[0,:], corner_pt[1,:], zorder=4, color='r', s=15)
 
-    plt.scatter(corner_pt[0,:], corner_pt[1,:], zorder=4, color='c', s=15)
- 
-    print('minxy ',minx,miny)
     print((markup_slice_coords[0,:]-brain_slice.x_min).min()/brain_slice.resolution)
     print((markup_slice_coords[1,:]-brain_slice.y_min).min()/brain_slice.resolution)
     print(markup_slice_pixels[1,:].min())
