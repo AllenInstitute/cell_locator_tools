@@ -76,11 +76,11 @@ if __name__ == "__main__":
         t_mask[ann_mask.shape[0]-1-ii,:] = ann_mask[ii,:]
 
     plt.figure(figsize=(15,15))
-    plt.subplot(1,2,1)
+    #plt.subplot(1,2,1)
 
-    plt.imshow(slice_img)
+    #plt.imshow(slice_img)
 
-    plt.subplot(1,2,2)
+    #plt.subplot(1,2,2)
 
     val = slice_img.max()+2.0
 
