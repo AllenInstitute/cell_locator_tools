@@ -24,7 +24,7 @@ def get_boundary(brain_slice, markup_pts, threshold_factor):
     annotation = spline_utils.Annotation(markup_slice_coords[0,:],
                                          markup_slice_coords[1,:])
 
-    annotation_mask = annotation.get_mask(25, just_boundary=True, threshold_factor=threshold_factor)
+    annotation_mask = annotation.get_mask(25, just_boundary=False, threshold_factor=threshold_factor)
     print('full mask in %e seconds' % (time.time()-t0))
     return annotation_mask
 
@@ -63,25 +63,32 @@ if __name__ == "__main__":
         markup_pts[1,i_p] = p['y']
         markup_pts[2,i_p] = p['z']
 
-    bdry_matrix_25 = get_boundary(brain_slice_matrix, markup_pts, threshold_factor=0.9)
-    bdry_matrix = get_boundary(brain_slice_matrix, markup_pts, threshold_factor=0.05)
+    #bdry_matrix_25 = get_boundary(brain_slice_matrix, markup_pts, threshold_factor=0.9)
+    #bdry_matrix = get_boundary(brain_slice_matrix, markup_pts, threshold_factor=0.05)
+    #bdry_matrix = bdry_matrix.astype(int)*2
+    #bdry_matrix[bdry_matrix_25] -=1
+
     print('')
-    bdry_matrix = bdry_matrix.astype(int)*2
-    bdry_matrix[bdry_matrix_25] -=1
-
-
-    bdry_pts_25 = get_boundary(brain_slice_pts, markup_pts, threshold_factor=0.9)
+    #bdry_pts_25 = get_boundary(brain_slice_pts, markup_pts, threshold_factor=0.9)
     bdry_pts = get_boundary(brain_slice_pts, markup_pts, threshold_factor=0.05)
     bdry_pts = bdry_pts.astype(int)*2
-    bdry_pts[bdry_pts_25] -=1
+    #bdry_pts[bdry_pts_25] -=1
 
-    bdry_pts = bdry_pts.transpose()
+    v = 3*bdry_pts.max()
+    #bdry_pts[45,99] = v
+    #bdry_pts[45,98] = v
+    #bdry_pts[45,145] = v
+    #bdry_pts[49,99] = v
+    #bdry_pts[38,99] = v
+    #bdry_pts = bdry_pts.transpose()
 
     plt.figure(figsize=(10,10))
-    plt.subplot(1,2,1)
-    plt.imshow(bdry_matrix)
-    plt.subplot(1,2,2)
+    #plt.subplot(1,2,1)
+    #plt.title('matrix')
+    #plt.imshow(bdry_matrix)
+    #plt.subplot(1,2,2)
+    plt.title('pts')
     plt.imshow(bdry_pts)
     plt.savefig(args.outname)
     print(bdry_pts.shape,bdry_pts.sum())
-    print(bdry_matrix.shape,bdry_matrix.sum())
+    #print(bdry_matrix.shape,bdry_matrix.sum())
