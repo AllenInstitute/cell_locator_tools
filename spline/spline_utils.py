@@ -326,14 +326,7 @@ class Annotation(object):
             pts[ii,0] = pp[0]
             pts[ii,1] = pp[1]
 
-        to_keep = np.ones(pts.shape[0], dtype=bool)
-        for ix in np.unique(pts[:,0]):
-            valid_b = np.where(self.border_x_pixels==ix)[0]
-            valid_p = np.where(pts[:,0]==ix)[0]
-            b_y = set(self.border_y_pixels[valid_b])
-            for ii in valid_p:
-                if pts[ii,1] in b_y:
-                    to_keep[ii] = False
+        to_keep = self._border_mask[pts[:,1], pts[:,0]]
 
         pts = pts[to_keep,:]
 
@@ -362,6 +355,12 @@ class Annotation(object):
         t0 = time.time()
         self._build_boundary(self.resolution, threshold_factor)
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
+
+        # create a mask that is False on border pixels and True everywhere else;
+        # this will be used to prevent border pixels from being selected as
+        # "interesting" points when scanning
+        self._border_mask = np.ones(mask.shape, dtype=bool)
+        self._border_mask[self.border_y_pixels, self.border_x_pixels] = False
 
         self._interesting_ix = []
         self._interesting_iy = []
@@ -406,6 +405,8 @@ class Annotation(object):
                     self._interesting_ix = self._clean_list(self._interesting_ix, 0)
 
         mask[self._border_y_pixels, self._border_x_pixels] = True
+
+        del self._border_mask
 
         print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
