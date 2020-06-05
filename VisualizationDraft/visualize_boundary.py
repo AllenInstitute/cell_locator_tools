@@ -20,13 +20,11 @@ import argparse
 def get_boundary(brain_slice, markup_pts, threshold_factor):
     t0 = time.time()
     markup_slice_coords = brain_slice.coord_converter.c_to_slice(markup_pts)
-    markup_slice_pixels = brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
 
-    annotation = spline_utils.Annotation(markup_slice_coords[0,:]-brain_slice.x_min,
-                                         markup_slice_coords[1,:]-brain_slice.y_min,
-                                         brain_slice.resolution*args.ds)
+    annotation = spline_utils.Annotation(markup_slice_coords[0,:],
+                                         markup_slice_coords[1,:])
 
-    annotation_mask = annotation.get_mask(just_boundary=True, threshold_factor=threshold_factor)
+    annotation_mask = annotation.get_mask(25, just_boundary=True, threshold_factor=threshold_factor)
     print('full mask in %e seconds' % (time.time()-t0))
     return annotation_mask
 
