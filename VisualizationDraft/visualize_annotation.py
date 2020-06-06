@@ -67,7 +67,7 @@ if __name__ == "__main__":
     ann_mask = annotation.get_mask(brain_slice.resolution)
     mesh = np.meshgrid(np.arange(ann_mask.shape[0]), np.arange(ann_mask.shape[1]))
     ann_mask_pix = np.array([mesh[0].flatten(), mesh[1].flatten()])
-    ann_mask_wc = annotation.pixel_to_wc(ann_mask_pix)
+    ann_mask_wc = annotation.pixels_to_wc(ann_mask_pix)
     ann_mask_pix = brain_slice.slice_to_pixel(ann_mask_wc)
 
     t_mask = np.zeros(ann_mask.shape, dtype=bool)
@@ -123,12 +123,10 @@ if __name__ == "__main__":
 
     px = brain_slice.slice_to_pixel(p)
     print(px)
-    print(annotation.y_max)
-
 
     plt.subplot(2,2,2)
 
-    sp_pix = annotation.wc_to_pixel(np.array([annotation._spline.x, annotation._spline.y]))
+    sp_pix = annotation.wc_to_pixels(np.array([annotation._spline.x, annotation._spline.y]))
 
     ann_mask = ann_mask.astype(int)
     print('mask sum ',ann_mask.sum(),ann_mask.max())

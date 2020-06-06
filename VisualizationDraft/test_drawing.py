@@ -57,7 +57,7 @@ def draw_shape(xx, yy, out_name, n_t=100):
     img[iy0:iy0+dy, ix0:ix0+dx][blank_mask] = 2.0
 
     xy = np.array([xx,yy])
-    pix = ann.wc_to_pixel(xy)
+    pix = ann.wc_to_pixels(xy)
 
 
     print('after ',img.sum())

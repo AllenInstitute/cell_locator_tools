@@ -1,4 +1,5 @@
 import numpy as np
+import coords
 import time
 
 
@@ -89,19 +90,11 @@ class Annotation(object):
 
     @property
     def x_min(self):
-        return self._x_min
-
-    @property
-    def x_max(self):
-        return self._x_max
+        return self.coord_transform._origin[0]
 
     @property
     def y_min(self):
-        return self._y_min
-
-    @property
-    def y_max(self):
-        return self._y_max
+        return self.coord_transform._origin[1]
 
     @property
     def border_x(self):
@@ -121,51 +114,40 @@ class Annotation(object):
 
     @property
     def resolution(self):
-        return self._resolution
+        return self.coord_transform._x_resolution
 
     def __init__(self, x_vals, y_vals):
         self._spline = Spline2D(x_vals, y_vals)
         self._clean_border()
 
-    def wc_to_pixel(self, xy):
+    def wc_to_pixels(self, xy):
         """
         xy is a 2xN numpy array
         """
-        pixel_coords = np.zeros(xy.shape, dtype=int)
-        pixel_coords[0,:] = np.round((xy[0,:]-self.x_min)/self.resolution).astype(int)
-        pixel_coords[1,:] = np.round((xy[1,:]-self.y_min)/self.resolution).astype(int)
-        return pixel_coords
+        return self.coord_transform.wc_to_pixels(xy)
 
-    def pixel_to_wc(self, pixel):
+    def pixels_to_wc(self, pixels):
         """
-        pixel is a 2xN numpy array
+        pixels is a 2xN numpy array
         """
-        wc = np.zeros(pixel.shape, dtype=int)
-        wc[0,:] = self.x_min+pixel[0,:]*self.resolution
-        wc[1,:] = self.y_min+pixel[1,:]*self.resolution
-        return wc
+        return self.coord_transform.pixels_to_wc(pixels)
 
     def _clean_border(self):
         self._border_x = None
         self._border_y = None
         self._border_x_pixels = None
         self._border_y_pixels = None
-        self._x_min = None
-        self._x_max = None
-        self._y_min = None
-        self._y_max = None
         self._border_x_pixels_by_x = None
         self._border_y_pixels_by_x = None
         self._border_x_pixels_by_y = None
         self._border_y_pixels_by_y = None
         self._by_x_lookup = None
         self._by_y_lookup = None
-        self._resolution = None
         self._border_interpolator = None
 
     def _build_boundary(self, resolution, threshold_factor):
         self._clean_border()
-        self._resolution = resolution
+
         border_x = []
         border_y = []
         n_segments = len(self._spline.x)
@@ -199,16 +181,17 @@ class Annotation(object):
         border_x = np.concatenate(border_x)
         border_y = np.concatenate(border_y)
 
+        x0 = border_x.min()
+        y0 = border_y.min()
+        self.coord_transform = coords.PixelTransformer(np.array([x0, y0]),
+                                                       np.identity(2,dtype=float),
+                                                       resolution, resolution)
+
         self._border_x = border_x
         self._border_y = border_y
 
-        self._x_min = self._border_x.min()
-        self._y_min = self._border_y.min()
-        self._x_max = self._border_x.max()
-        self._y_max = self._border_y.max()
-
         # convert to integer pixel values
-        pixel_coords = self.wc_to_pixel(np.array([border_x, border_y]))
+        pixel_coords = self.wc_to_pixels(np.array([border_x, border_y]))
         self._border_x_pixels = pixel_coords[0,:]
         self._border_y_pixels = pixel_coords[1,:]
 
@@ -350,10 +333,8 @@ class Annotation(object):
 
     def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
 
-        self._resolution = resolution
-
         t0 = time.time()
-        self._build_boundary(self.resolution, threshold_factor)
+        self._build_boundary(resolution, threshold_factor)
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
         # create a mask that is False on border pixels and True everywhere else;
