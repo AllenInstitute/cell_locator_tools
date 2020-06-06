@@ -66,9 +66,12 @@ if __name__ == "__main__":
 
     ann_mask = annotation.get_mask(brain_slice.resolution)
     mesh = np.meshgrid(np.arange(ann_mask.shape[0]), np.arange(ann_mask.shape[1]))
-    ann_mask_pix = np.array([mesh[0].flatten(), mesh[1].flatten()])
+    ann_mask_pix = np.array([mesh[1].flatten(), mesh[0].flatten()])
     ann_mask_wc = annotation.pixels_to_wc(ann_mask_pix)
     ann_mask_pix = brain_slice.slice_to_pixel(ann_mask_wc)
+
+    ann_sp_pix = brain_slice.slice_to_pixel(np.array([annotation._spline.x,
+                                                      annotation._spline.y]))
 
     t_mask = np.zeros(ann_mask.shape, dtype=bool)
 
@@ -76,11 +79,8 @@ if __name__ == "__main__":
         t_mask[ann_mask.shape[0]-1-ii,:] = ann_mask[ii,:]
 
     plt.figure(figsize=(15,15))
-    #plt.subplot(1,2,1)
 
-    #plt.imshow(slice_img)
-
-    plt.subplot(2,2,1)
+    #plt.subplot(2,2,1)
 
     val = slice_img.max()+2.0
 
@@ -98,15 +98,24 @@ if __name__ == "__main__":
     y0 = ann_mask_pix[1,:].min()
     y1 = ann_mask_pix[1,:].max()+1
 
-    slice_img[x0:x1, y0:y1][t_mask] += val
-    slice_img[x0:x1, y0:y1][t_mask] *= 0.5
+    #slice_img[y0:y1, x0:x1][t_mask] += val
+    #slice_img[y0:y1, x0:x1][t_mask] *= 0.5
+
+    for ix, iy in zip(ann_mask_pix[0,:], ann_mask_pix[1,:]):
+        if t_mask[iy-y0,ix-x0]:
+            slice_img[iy,ix] += val
+            slice_img[iy,ix]*=0.5
+
+    print('img sum intermediate ',slice_img.sum())
+    for ix, iy in zip(ann_sp_pix[0,:], ann_sp_pix[1,:]):
+        slice_img[iy,ix] = 3*val
 
 
     print('img sum again ',slice_img.sum())
     #slice_img[ann_mask_pix[1,:], ann_mask_pix[0,:]][ann_mask] *= 0.5
     plt.imshow(slice_img,zorder=1)
     plt.scatter(markup_slice_pixels[0,:], markup_slice_pixels[1,:],
-                color='r', zorder=2, s=1, marker='o')
+                color='r', zorder=2, s=1, marker='o', alpha=0.5)
 
     plt.scatter(corner_pt[0,:], corner_pt[1,:], zorder=4, color='r', s=15)
 
@@ -123,6 +132,9 @@ if __name__ == "__main__":
 
     px = brain_slice.slice_to_pixel(p)
     print(px)
+    plt.savefig(args.outname)
+    exit()
+
 
     plt.subplot(2,2,2)
 
