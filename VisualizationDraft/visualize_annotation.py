@@ -52,6 +52,7 @@ if __name__ == "__main__":
 
     ann_mask = annotation.get_mask(brain_slice.resolution)
     mesh = np.meshgrid(np.arange(ann_mask.shape[0]), np.arange(ann_mask.shape[1]))
+
     ann_mask_pix = np.array([mesh[1].flatten(), mesh[0].flatten()])
     ann_mask_wc = annotation.pixels_to_wc(ann_mask_pix)
     ann_mask_pix = brain_slice.slice_to_pixel(ann_mask_wc)
