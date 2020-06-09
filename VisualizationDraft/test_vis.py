@@ -43,13 +43,16 @@ class BrainSliceTest(unittest.TestCase):
 
 class ImageGenerationTest(unittest.TestCase):
 
-    def test_images(self):
-        resolution = 25
+    @classmethod
+    def setUpClass(cls):
+        cls.resolution = 25
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        brain_vol = cell_locator_utils.BrainVolume(img_data, resolution)
-        print(img_data.shape)
+        cls.brain_vol = cell_locator_utils.BrainVolume(img_data, cls.resolution)
+
+    def test_images(self):
+
         t0 = time.time()
 
         for dex in range(4):
@@ -63,7 +66,7 @@ class ImageGenerationTest(unittest.TestCase):
             assert os.path.isfile(control_name)
 
             (new_img,
-             brain_slice) = brain_vol.slice_img_from_annotation(annotation_name)
+             brain_slice) = self.brain_vol.slice_img_from_annotation(annotation_name)
 
             plt.figure(figsize=(10,10))
             plt.imshow(new_img)
@@ -98,12 +101,6 @@ class ImageGenerationTest(unittest.TestCase):
         rather than just from the transformation matrix
         """
 
-        resolution = 25
-        img_name = 'atlasVolume.mhd'
-        img = SimpleITK.ReadImage(img_name)
-        img_data = SimpleITK.GetArrayFromImage(img)
-        brain_vol = cell_locator_utils.BrainVolume(img_data, resolution)
-
         annotation_fname = '../CellLocatorAnnotations/annotation_unittest.json'
         self.assertTrue(os.path.isfile(annotation_fname))
 
@@ -113,18 +110,18 @@ class ImageGenerationTest(unittest.TestCase):
         c2 = cell_locator_utils.CellLocatorTransformation(full_annotation['Markups'][0],
                                                           from_pts=True)
 
-        mask1 = c1.get_slice_mask_from_allen(brain_vol.brain_volume,
-                                             brain_vol.resolution)
-        mask2 = c2.get_slice_mask_from_allen(brain_vol.brain_volume,
-                                             brain_vol.resolution)
+        mask1 = c1.get_slice_mask_from_allen(self.brain_vol.brain_volume,
+                                             self.brain_vol.resolution)
+        mask2 = c2.get_slice_mask_from_allen(self.brain_vol.brain_volume,
+                                             self.brain_vol.resolution)
 
         np.testing.assert_equal(mask1, mask2)
 
         valid = np.where(mask1)
-        s_coords1 = c1.allen_to_slice(brain_vol.brain_volume[:,valid[0]])
-        s_coords2 = c2.allen_to_slice(brain_vol.brain_volume[:,valid[0]])
-        self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*brain_vol.resolution)
-        self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*brain_vol.resolution)
+        s_coords1 = c1.allen_to_slice(self.brain_vol.brain_volume[:,valid[0]])
+        s_coords2 = c2.allen_to_slice(self.brain_vol.brain_volume[:,valid[0]])
+        self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*self.brain_vol.resolution)
+        self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*self.brain_vol.resolution)
 
 
 if __name__ == "__main__":
