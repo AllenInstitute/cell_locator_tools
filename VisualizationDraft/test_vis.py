@@ -27,13 +27,13 @@ class BrainSliceTest(unittest.TestCase):
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        cls.brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
+        cls.brain_vol = cell_locator_utils.BrainVolume(img_data, resolution)
 
     def test_pixel_to_slice(self):
         coord_converter = cell_locator_utils.CellLocatorTransformation(self.full_annotation)
         brain_slice = cell_locator_utils.BrainSlice(coord_converter,
-                                                    self.brain_img.resolution,
-                                                    self.brain_img.brain_volume)
+                                                    self.brain_vol.resolution,
+                                                    self.brain_vol.brain_volume)
         rng = np.random.RandomState(8123512)
         pixel0 = rng.randint(0,4000, size=(2,5000))
         slice_coords = brain_slice.pixel_to_slice(pixel0)
@@ -48,7 +48,7 @@ class ImageGenerationTest(unittest.TestCase):
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
+        brain_vol = cell_locator_utils.BrainVolume(img_data, resolution)
         print(img_data.shape)
         t0 = time.time()
 
@@ -63,7 +63,7 @@ class ImageGenerationTest(unittest.TestCase):
             assert os.path.isfile(control_name)
 
             (new_img,
-             brain_slice) = brain_img.slice_img_from_annotation(annotation_name)
+             brain_slice) = brain_vol.slice_img_from_annotation(annotation_name)
 
             plt.figure(figsize=(10,10))
             plt.imshow(new_img)
@@ -102,7 +102,7 @@ class ImageGenerationTest(unittest.TestCase):
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
+        brain_vol = cell_locator_utils.BrainVolume(img_data, resolution)
 
         annotation_fname = '../CellLocatorAnnotations/annotation_unittest.json'
         self.assertTrue(os.path.isfile(annotation_fname))
@@ -113,18 +113,18 @@ class ImageGenerationTest(unittest.TestCase):
         c2 = cell_locator_utils.CellLocatorTransformation(full_annotation['Markups'][0],
                                                           from_pts=True)
 
-        mask1 = c1.get_slice_mask_from_allen(brain_img.brain_volume,
-                                             brain_img.resolution)
-        mask2 = c2.get_slice_mask_from_allen(brain_img.brain_volume,
-                                             brain_img.resolution)
+        mask1 = c1.get_slice_mask_from_allen(brain_vol.brain_volume,
+                                             brain_vol.resolution)
+        mask2 = c2.get_slice_mask_from_allen(brain_vol.brain_volume,
+                                             brain_vol.resolution)
 
         np.testing.assert_equal(mask1, mask2)
 
         valid = np.where(mask1)
-        s_coords1 = c1.allen_to_slice(brain_img.brain_volume[:,valid[0]])
-        s_coords2 = c2.allen_to_slice(brain_img.brain_volume[:,valid[0]])
-        self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*brain_img.resolution)
-        self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*brain_img.resolution)
+        s_coords1 = c1.allen_to_slice(brain_vol.brain_volume[:,valid[0]])
+        s_coords2 = c2.allen_to_slice(brain_vol.brain_volume[:,valid[0]])
+        self.assertLess(np.abs(s_coords1[2,:]).max(), 0.5*brain_vol.resolution)
+        self.assertLess(np.abs(s_coords2[2,:]).max(), 0.5*brain_vol.resolution)
 
 
 if __name__ == "__main__":
