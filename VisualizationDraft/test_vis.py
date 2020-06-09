@@ -27,7 +27,7 @@ class BrainSliceTest(unittest.TestCase):
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        cls.brain_img = cell_locator_utils.BrainImage(img_data, resolution)
+        cls.brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
 
     def test_pixel_to_slice(self):
         coord_converter = cell_locator_utils.CellLocatorTransformation(self.full_annotation)
@@ -48,7 +48,7 @@ class ImageGenerationTest(unittest.TestCase):
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        brain_img = cell_locator_utils.BrainImage(img_data, resolution)
+        brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
         print(img_data.shape)
         t0 = time.time()
 
@@ -101,7 +101,7 @@ class ImageGenerationTest(unittest.TestCase):
         img_name = 'atlasVolume.mhd'
         img = SimpleITK.ReadImage(img_name)
         img_data = SimpleITK.GetArrayFromImage(img)
-        brain_img = cell_locator_utils.BrainImage(img_data, resolution)
+        brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
 
         annotation_fname = '../CellLocatorAnnotations/annotation_unittest.json'
         self.assertTrue(os.path.isfile(annotation_fname))

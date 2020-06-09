@@ -20,7 +20,7 @@ if __name__ == "__main__":
     img = SimpleITK.ReadImage(img_name)
     img_data = SimpleITK.GetArrayFromImage(img)
 
-    brain_img = cell_locator_utils.BrainImage(img_data, resolution)
+    brain_img = cell_locator_utils.BrainVolume(img_data, resolution)
     (slice_img,
      brain_slice) = brain_img.slice_img_from_annotation(args.annotation,
                                                         from_pts=args.pts)

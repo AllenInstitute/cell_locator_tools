@@ -245,7 +245,7 @@ class BrainSlice(object):
         return pixel_coords
 
 
-class BrainImage(object):
+class BrainVolume(object):
 
     def __init__(self, img_data, resolution):
         """
