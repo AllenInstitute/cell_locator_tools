@@ -73,7 +73,6 @@ if __name__ == "__main__":
     ann_sp_pix = brain_slice.slice_to_pixel(np.array([annotation._spline.x,
                                                       annotation._spline.y]))
 
-    t_mask = np.zeros(ann_mask.shape, dtype=bool)
     print('x')
     print(ann_sp_pix[0,:])
     print(markup_slice_pixels[0,:])
@@ -81,8 +80,14 @@ if __name__ == "__main__":
     print(ann_sp_pix[1,:])
     print(markup_slice_pixels[1,:])
 
-    for ii in range(ann_mask.shape[0]):
-        t_mask[ann_mask.shape[0]-1-ii,:] = ann_mask[ii,:]
+    print('')
+
+    #t_mask = np.zeros(ann_mask.shape, dtype=bool)
+
+    #for ii in range(ann_mask.shape[0]):
+    #    t_mask[ann_mask.shape[0]-1-ii,:] = ann_mask[ii,:]
+
+    t_mask = ann_mask
 
     plt.figure(figsize=(15,15))
 

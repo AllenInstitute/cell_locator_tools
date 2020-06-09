@@ -6,6 +6,7 @@ mod_dir = this_dir.replace('VisualizationDraft', 'geom_package')
 sys.path.append(mod_dir)
 
 import planar_geometry
+import coords
 import numpy as np
 import json
 
@@ -207,6 +208,11 @@ class BrainSlice(object):
         self._y_min = slice_coords[1,:].min()
         self._y_max = slice_coords[1,:].max()
 
+        oo = np.array([self.x_min, self.y_min])
+        self._slice_to_pixel_transformer = coords.PixelTransformer(oo,
+                                                       np.identity(2, dtype=float),
+                                                       resolution, resolution)
+
         x1 = np.round(self.x_max/self.resolution).astype(int)
         x0 = np.round(self.x_min/self.resolution).astype(int)
         self._x_min_pix = x0
@@ -231,18 +237,10 @@ class BrainSlice(object):
         return pixel_coords, valid_dex
 
     def pixel_to_slice(self, pixel_coords):
-        slice_coords = np.zeros(pixel_coords.shape, dtype=float)
-        slice_coords[0,:] = (pixel_coords[0,:]+self.x_min_pix)*self.resolution
-        yy = self.n_rows-1-pixel_coords[1,:]+self.y_min_pix
-        slice_coords[1,:] = yy*self.resolution
-        return slice_coords
+        return self._slice_to_pixel_transformer.pixels_to_wc(pixel_coords)
 
     def slice_to_pixel(self, slice_coords):
-        pixel_coords = np.zeros(slice_coords.shape, dtype=int)
-        pixel_coords[0,:] = np.round(slice_coords[0,:]/self.resolution).astype(int)-self.x_min_pix
-        yy = np.round(slice_coords[1,:]/self.resolution).astype(int)
-        pixel_coords[1,:] = self.n_rows-1+self.y_min_pix-yy
-        return pixel_coords
+        return self._slice_to_pixel_transformer.wc_to_pixels(slice_coords)
 
 
 class BrainVolume(object):
