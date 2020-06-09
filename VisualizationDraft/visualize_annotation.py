@@ -46,7 +46,6 @@ if __name__ == "__main__":
         markup_pts[2,i_p] = p['z']
 
     markup_slice_coords = brain_slice.coord_converter.c_to_slice(markup_pts)
-    print(np.abs(markup_slice_coords[2,:]).max())
     markup_slice_pixels = brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
 
     annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:])
