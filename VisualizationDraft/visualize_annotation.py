@@ -86,7 +86,20 @@ if __name__ == "__main__":
     plt.scatter(markup_slice_pixels[0,:], markup_slice_pixels[1,:],
                 color='r', zorder=2, s=1, marker='o', alpha=0.5)
     plt.savefig(args.outname)
+    plt.close()
 
     print(slice_img.brain_slice.origin)
     print(np.dot(slice_img.brain_slice.coord_converter._c_to_slice,
                  np.append(slice_img.brain_slice.origin,1.0)))
+
+    plt.figure(figsize=(10,10))
+    t_arr = np.arange(0.01,1.01,0.01)
+    for ii in range(len(annotation._spline.x)):
+        if ii%3==0:
+            plt.subplot(3,3,(ii//3)+1)
+            plt.title('%d' % ii)
+        xx,yy = annotation._spline.values(ii,t_arr)
+        plt.plot(xx,yy)
+        plt.plot([xx[0],xx[-1]],[yy[0],yy[-1]], color='r', linestyle='--')
+    plt.savefig('spline_segments.pdf')
+    plt.close()
