@@ -430,7 +430,7 @@ class Annotation(object):
                 must_generate = True
         if must_generate:
             self._mask = self._generate_mask(resolution, just_boundary=just_boundary,
-                                             threshold_factor=threshold_factor).transpose()
+                                             threshold_factor=threshold_factor)
         return self._mask
 
 
