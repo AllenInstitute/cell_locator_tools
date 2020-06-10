@@ -65,11 +65,10 @@ class ImageGenerationTest(unittest.TestCase):
             control_name = 'control_imgs/annotation_%d.png' % dex
             assert os.path.isfile(control_name)
 
-            (new_img,
-             brain_slice) = self.brain_vol.slice_img_from_annotation(annotation_name)
+            slice_img = self.brain_vol.slice_img_from_annotation(annotation_name)
 
             plt.figure(figsize=(10,10))
-            plt.imshow(new_img)
+            plt.imshow(slice_img.img)
             plt.savefig(img_name)
             print(img_name)
 

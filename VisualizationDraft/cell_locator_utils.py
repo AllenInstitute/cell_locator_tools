@@ -257,6 +257,48 @@ class BrainSlice(object):
         return self._slice_to_pixel_transformer.wc_to_pixels(slice_coords)
 
 
+class BrainSliceImage(object):
+
+    def __init__(self, brain_slice, slice_img):
+        self._brain_slice = copy.deepcopy(brain_slice)
+        self._img = np.copy(slice_img)
+
+    @property
+    def brain_slice(self):
+        return self._brain_slice
+
+    @property
+    def img(self):
+        return self._img
+
+    def apply_mask(self, annotation):
+        mask = annotation.get_mask(self.brain_slice.resolution,
+                          pixel_transformer=self.brain_slice._slice_to_pixel_transformer)
+
+        # convert from pixel coords in the annotation to pixel coords
+        # in the brain slice
+        mask_mesh = np.meshgrid(np.arange(mask.shape[0]), np.arange(mask.shape[1]))
+        pixel_coords = np.array([mask_mesh[1].flatten(),
+                                 mask_mesh[0].flatten()])
+        wc_coords = annotation.pixels_to_wc(pixel_coords)
+        pixel_coords = self.brain_slice.slice_to_pixel(wc_coords)
+        x0 = pixel_coords[0,:].min()
+        y0 = pixel_coords[1,:].min()
+
+        unq_pts = set()
+        for xx, yy in zip(pixel_coords[0,:], pixel_coords[1,:]):
+            t = (xx,yy)
+            assert t not in unq_pts
+            unq_pts.add(t)
+
+        pixel_x = pixel_coords[0,:].reshape((mask.shape[1],mask.shape[0]))
+        pixel_y = pixel_coords[1,:].reshape((mask.shape[1],mask.shape[0]))
+        val = self.img.max()
+        for i_row in range(pixel_x.shape[0]):
+            self._img[pixel_y[i_row,:],pixel_x[i_row,:]] += 0.5*mask[:,i_row]*(val-self._img[pixel_y[i_row,:],pixel_x[i_row,:]])
+
+        return None
+
 class BrainVolume(object):
 
     def __init__(self, img_data, resolution):
@@ -293,6 +335,8 @@ class BrainVolume(object):
                                             pixel_coords[2,:]<self.nz0))))))[0]
         return pixel_coords, valid_dex
 
+    def voxel_to_allen(self, voxel_coords):
+        return voxel_coords*self.resolution
 
     def pixel_mask_from_CellLocatorTransformation(self, coord_converter):
         """
@@ -372,4 +416,4 @@ class BrainVolume(object):
         new_img[new_img_dex_flat] = pixel_vals
         new_img = new_img.reshape(n_img_rows, n_img_cols)
 
-        return new_img, brain_slice
+        return BrainSliceImage(brain_slice, new_img)

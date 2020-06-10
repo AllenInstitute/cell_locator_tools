@@ -145,7 +145,7 @@ class Annotation(object):
         self._by_y_lookup = None
         self._border_interpolator = None
 
-    def _build_boundary(self, resolution, threshold_factor):
+    def _build_boundary(self, resolution, threshold_factor, pixel_transformer):
         self._clean_border()
 
         border_x = []
@@ -181,11 +181,14 @@ class Annotation(object):
         border_x = np.concatenate(border_x)
         border_y = np.concatenate(border_y)
 
-        x0 = border_x.min()
-        y0 = border_y.min()
-        self.coord_transform = coords.PixelTransformer(np.array([x0, y0]),
-                                                       np.identity(2,dtype=float),
-                                                       resolution, resolution)
+        if pixel_transformer is not None:
+            self.coord_transform = pixel_transformer
+        else:
+            x0 = border_x.min()
+            y0 = border_y.min()
+            self.coord_transform = coords.PixelTransformer(np.array([x0, y0]),
+                                                           np.identity(2,dtype=float),
+                                                           resolution, resolution)
 
         self._border_x = border_x
         self._border_y = border_y
@@ -195,8 +198,12 @@ class Annotation(object):
         self._border_x_pixels = pixel_coords[0,:]
         self._border_y_pixels = pixel_coords[1,:]
 
-        self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
-        self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
+        if pixel_transformer is not None:
+            self._n_x_pixels = self.border_x_pixels.max()+1
+            self._n_y_pixels = self.border_y_pixels.max()+1
+        else:
+            self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
+            self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
 
         # cull pixels that are identical to their neighbor
         n_border = len(self._border_x_pixels)
@@ -331,10 +338,11 @@ class Annotation(object):
         return out_pts
 
 
-    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
+    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25,
+                 pixel_transformer=None):
 
         t0 = time.time()
-        self._build_boundary(resolution, threshold_factor)
+        self._build_boundary(resolution, threshold_factor, pixel_transformer)
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
         # create a mask that is False on border pixels and True everywhere else;
