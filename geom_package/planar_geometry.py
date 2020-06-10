@@ -97,6 +97,11 @@ class Plane(object):
         self._normal /= np.sqrt(np.sum(self._normal**2))
         self._eps = 1.0e-10
 
+    def set_origin(self, origin_in):
+        if not self.in_plane(origin_in):
+            raise RuntimeError("Cannot set origin; this point not in plane")
+        self._origin = np.copy(origin_in)
+
     def in_plane(self, pt):
         v = v_from_pts(pt, self.origin)
         d = np.abs(np.dot(v, self.normal))
