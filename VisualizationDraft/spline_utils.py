@@ -116,9 +116,10 @@ class Annotation(object):
     def resolution(self):
         return self.coord_transform._x_resolution
 
-    def __init__(self, x_vals, y_vals):
+    def __init__(self, x_vals, y_vals, pixel_transformer=None):
         self._spline = Spline2D(x_vals, y_vals)
         self._clean_border()
+        self.coord_transform = pixel_transformer
 
     def wc_to_pixels(self, xy):
         """
@@ -145,7 +146,7 @@ class Annotation(object):
         self._by_y_lookup = None
         self._border_interpolator = None
 
-    def _build_boundary(self, resolution, threshold_factor, pixel_transformer):
+    def _build_boundary(self, resolution, threshold_factor):
         self._clean_border()
 
         border_x = []
@@ -181,9 +182,9 @@ class Annotation(object):
         border_x = np.concatenate(border_x)
         border_y = np.concatenate(border_y)
 
-        if pixel_transformer is not None:
-            self.coord_transform = pixel_transformer
-        else:
+        just_made_coord_transform = False
+        if self.coord_transform is None:
+            just_made_coord_transform = True
             x0 = border_x.min()
             y0 = border_y.min()
             self.coord_transform = coords.PixelTransformer(np.array([x0, y0]),
@@ -198,12 +199,13 @@ class Annotation(object):
         self._border_x_pixels = pixel_coords[0,:]
         self._border_y_pixels = pixel_coords[1,:]
 
-        if pixel_transformer is not None:
-            self._n_x_pixels = self.border_x_pixels.max()+1
-            self._n_y_pixels = self.border_y_pixels.max()+1
-        else:
+        if just_made_coord_transform:
             self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
             self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
+        else:
+            self._n_x_pixels = self.border_x_pixels.max()+1
+            self._n_y_pixels = self.border_y_pixels.max()+1
+
 
         # cull pixels that are identical to their neighbor
         n_border = len(self._border_x_pixels)
@@ -340,16 +342,17 @@ class Annotation(object):
 
     def _generate_mask(self, resolution,
                        just_boundary=False,
-                       threshold_factor=0.25,
-                       pixel_transformer=None):
+                       threshold_factor=0.25):
         print('generating mask')
+
+        t0 = time.time()
+        self._build_boundary(resolution, threshold_factor)
+
         self._mask_params = {'resolution': resolution,
                              'just_boundary': just_boundary,
                              'threshold_factor': threshold_factor,
-                             'pixel_transformer': pixel_transformer}
+                             'pixel_transformer': self.coord_transform}
 
-        t0 = time.time()
-        self._build_boundary(resolution, threshold_factor, pixel_transformer)
         mask = np.zeros((self._n_y_pixels, self._n_x_pixels), dtype=bool)
 
         # create a mask that is False on border pixels and True everywhere else;
@@ -407,8 +410,7 @@ class Annotation(object):
         print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
 
-    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25,
-                 pixel_transformer=None):
+    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
         print('getting mask')
         must_generate = False
         if not hasattr(self, '_mask_params'):
@@ -420,16 +422,15 @@ class Annotation(object):
                 must_generate = True
             if np.abs(self._mask_params['threshold_factor']-threshold_factor)>1.0e-10:
                 must_generate = True
-            if pixel_transformer is not None and self._mask_params['pixel_transformer'] is None:
+            if self.coord_transform is not None and self._mask_params['pixel_transformer'] is None:
                 must_generate = True
-            elif self._mask_params['pixel_transformer'] is not None and pixel_transformer is None:
+            elif self._mask_params['pixel_transformer'] is not None and self.coord_transform is None:
                 must_generate = True
-            elif self._mask_params['pixel_transformer'] != pixel_transformer:
+            elif self._mask_params['pixel_transformer'] != self.coord_transform:
                 must_generate = True
         if must_generate:
             self._mask = self._generate_mask(resolution, just_boundary=just_boundary,
-                                             threshold_factor=threshold_factor,
-                                             pixel_transformer=pixel_transformer)
+                                             threshold_factor=threshold_factor)
         return self._mask
 
 

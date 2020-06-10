@@ -40,10 +40,8 @@ if __name__ == "__main__":
     markup = full_annotation['Markups'][0]
     annotation = slice_img.brain_slice.annotation_from_markup(markup)
 
-    ann_mask = annotation.get_mask(slice_img.brain_slice.resolution,
-                                   pixel_transformer=slice_img.brain_slice._slice_to_pixel_transformer)
-    ann_mask = annotation.get_mask(slice_img.brain_slice.resolution,
-                                   pixel_transformer=slice_img.brain_slice._slice_to_pixel_transformer)
+    ann_mask = annotation.get_mask(slice_img.brain_slice.resolution)
+    ann_mask = annotation.get_mask(slice_img.brain_slice.resolution)
 
     mesh = np.meshgrid(np.arange(ann_mask.shape[0]), np.arange(ann_mask.shape[1]))
 

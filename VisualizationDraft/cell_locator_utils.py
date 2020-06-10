@@ -268,7 +268,8 @@ class BrainSlice(object):
         markup_slice_coords = self.coord_converter.c_to_slice(markup_pts)
         markup_slice_pixels = self.slice_to_pixel(markup_slice_coords[:2,:])
 
-        annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:])
+        annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:],
+                                             pixel_transformer=self._slice_to_pixel_transformer)
         return annotation
 
 
@@ -287,8 +288,7 @@ class BrainSliceImage(object):
         return self._img
 
     def apply_mask(self, annotation):
-        mask = annotation.get_mask(self.brain_slice.resolution,
-                          pixel_transformer=self.brain_slice._slice_to_pixel_transformer)
+        mask = annotation.get_mask(self.brain_slice.resolution)
 
         # convert from pixel coords in the annotation to pixel coords
         # in the brain slice
