@@ -300,12 +300,6 @@ class BrainSliceImage(object):
         x0 = pixel_coords[0,:].min()
         y0 = pixel_coords[1,:].min()
 
-        unq_pts = set()
-        for xx, yy in zip(pixel_coords[0,:], pixel_coords[1,:]):
-            t = (xx,yy)
-            assert t not in unq_pts
-            unq_pts.add(t)
-
         pixel_x = pixel_coords[0,:].reshape((mask.shape[1],mask.shape[0]))
         pixel_y = pixel_coords[1,:].reshape((mask.shape[1],mask.shape[0]))
         val = self.img.max()
