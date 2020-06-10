@@ -6,6 +6,7 @@ mod_dir = this_dir.replace('VisualizationDraft', 'geom_package')
 sys.path.append(mod_dir)
 
 import planar_geometry
+import spline_utils
 import coords
 import numpy as np
 import json
@@ -255,6 +256,20 @@ class BrainSlice(object):
 
     def slice_to_pixel(self, slice_coords):
         return self._slice_to_pixel_transformer.wc_to_pixels(slice_coords)
+
+    def annotation_from_markup(self, markup):
+
+        markup_pts = np.zeros((3,len(markup['Points'])), dtype=float)
+        for i_p, p in enumerate(markup['Points']):
+            markup_pts[0,i_p] = p['x']
+            markup_pts[1,i_p] = p['y']
+            markup_pts[2,i_p] = p['z']
+
+        markup_slice_coords = self.coord_converter.c_to_slice(markup_pts)
+        markup_slice_pixels = self.slice_to_pixel(markup_slice_coords[:2,:])
+
+        annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:])
+        return annotation
 
 
 class BrainSliceImage(object):

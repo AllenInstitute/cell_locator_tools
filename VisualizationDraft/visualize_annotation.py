@@ -38,16 +38,7 @@ if __name__ == "__main__":
     with open(args.annotation, 'rb') as in_file:
         full_annotation = json.load(in_file)
     markup = full_annotation['Markups'][0]
-    markup_pts = np.zeros((3,len(markup['Points'])), dtype=float)
-    for i_p, p in enumerate(markup['Points']):
-        markup_pts[0,i_p] = p['x']
-        markup_pts[1,i_p] = p['y']
-        markup_pts[2,i_p] = p['z']
-
-    markup_slice_coords = slice_img.brain_slice.coord_converter.c_to_slice(markup_pts)
-    markup_slice_pixels = slice_img.brain_slice.slice_to_pixel(markup_slice_coords[:2,:])
-
-    annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:])
+    annotation = slice_img.brain_slice.annotation_from_markup(markup)
 
     ann_mask = annotation.get_mask(slice_img.brain_slice.resolution,
                                    pixel_transformer=slice_img.brain_slice._slice_to_pixel_transformer)
@@ -59,8 +50,6 @@ if __name__ == "__main__":
 
     ann_sp_pix = slice_img.brain_slice.slice_to_pixel(np.array([annotation._spline.x,
                                                       annotation._spline.y]))
-
-    np.testing.assert_array_equal(ann_sp_pix, markup_slice_pixels)
 
     t_mask = ann_mask
 
@@ -83,7 +72,7 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(15,15))
     plt.imshow(slice_img.img,zorder=1)
-    plt.scatter(markup_slice_pixels[0,:], markup_slice_pixels[1,:],
+    plt.scatter(ann_sp_pix[0,:], ann_sp_pix[1,:],
                 color='r', zorder=2, s=1, marker='o', alpha=0.5)
     plt.savefig(args.outname)
     plt.close()
