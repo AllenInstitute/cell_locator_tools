@@ -9,8 +9,13 @@ import planar_geometry
 import coords
 import numpy as np
 import json
+import copy
 
 class CellLocatorTransformation(object):
+
+    @property
+    def origin(self):
+        return self._origin
 
     def __init__(self, annotation, from_pts=False):
         """
@@ -37,6 +42,11 @@ class CellLocatorTransformation(object):
             self._slice_to_c = self.slice_to_c_from_points(annotation)
         else:
             self._slice_to_c = self.slice_to_c_from_orientation(annotation)
+
+        # in 3-D cell-locator coordinates
+        self._origin = np.array([self._slice_to_c[0,3],
+                                 self._slice_to_c[1,3],
+                                 self._slice_to_c[2,3]])
 
         self._c_to_slice = np.linalg.inv(self._slice_to_c)
         self._a_to_slice = np.dot(self._c_to_slice,
@@ -147,6 +157,10 @@ class CellLocatorTransformation(object):
 
 
 class BrainSlice(object):
+
+    @property
+    def origin(self):
+        return self._coord_converter.origin
 
     @property
     def coord_converter(self):
