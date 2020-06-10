@@ -310,7 +310,8 @@ class BrainSliceImage(object):
         pixel_y = pixel_coords[1,:].reshape((mask.shape[1],mask.shape[0]))
         val = self.img.max()
         for i_row in range(pixel_x.shape[0]):
-            self._img[pixel_y[i_row,:],pixel_x[i_row,:]] += 0.5*mask[:,i_row]*(val-self._img[pixel_y[i_row,:],pixel_x[i_row,:]])
+            self._img[pixel_y[i_row,:],pixel_x[i_row,:]] += val*mask[:,i_row]
+            self._img[pixel_y[i_row,:],pixel_x[i_row,:]] *= 1.0-0.5*mask[:,i_row]
 
         return None
 
