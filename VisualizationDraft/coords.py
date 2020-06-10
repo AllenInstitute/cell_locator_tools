@@ -10,6 +10,21 @@ class PixelTransformer(object):
         self._y_resolution = y_resolution
         self._origin_dot_rotation = np.dot(rotation, self._origin)
 
+    def __eq__(self, other):
+        eps = 1.0e-10
+        if not np.allclose(self._origin, other._origin, rtol=eps, atol=eps):
+            return False
+        if not np.allclose(self._rotation, other._rotation, rtol=eps, atol=eps):
+            return False
+        if np.abs(self._x_resolution-other._x_resolution)>eps:
+            return False
+        if np.abs(self._y_resolution-other._y_resolution)>eps:
+            return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def wc_to_pixels(self, pts):
         """
         pts is 2xN

@@ -338,8 +338,15 @@ class Annotation(object):
         return out_pts
 
 
-    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25,
-                 pixel_transformer=None):
+    def _generate_mask(self, resolution,
+                       just_boundary=False,
+                       threshold_factor=0.25,
+                       pixel_transformer=None):
+        print('generating mask')
+        self._mask_params = {'resolution': resolution,
+                             'just_boundary': just_boundary,
+                             'threshold_factor': threshold_factor,
+                             'pixel_transformer': pixel_transformer}
 
         t0 = time.time()
         self._build_boundary(resolution, threshold_factor, pixel_transformer)
@@ -399,6 +406,31 @@ class Annotation(object):
 
         print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
+
+    def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25,
+                 pixel_transformer=None):
+        print('getting mask')
+        must_generate = False
+        if not hasattr(self, '_mask_params'):
+            must_generate = True
+        else:
+            if self._mask_params['just_boundary'] != just_boundary:
+                must_generate = True
+            if np.abs(self._mask_params['resolution']-resolution)>1.0e-10:
+                must_generate = True
+            if np.abs(self._mask_params['threshold_factor']-threshold_factor)>1.0e-10:
+                must_generate = True
+            if pixel_transformer is not None and self._mask_params['pixel_transformer'] is None:
+                must_generate = True
+            elif self._mask_params['pixel_transformer'] is not None and pixel_transformer is None:
+                must_generate = True
+            elif self._mask_params['pixel_transformer'] != pixel_transformer:
+                must_generate = True
+        if must_generate:
+            self._mask = self._generate_mask(resolution, just_boundary=just_boundary,
+                                             threshold_factor=threshold_factor,
+                                             pixel_transformer=pixel_transformer)
+        return self._mask
 
 
 if __name__ == "__main__":
