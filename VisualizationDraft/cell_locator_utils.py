@@ -293,8 +293,8 @@ class BrainSliceImage(object):
         # convert from pixel coords in the annotation to pixel coords
         # in the brain slice
         mask_mesh = np.meshgrid(np.arange(mask.shape[0]), np.arange(mask.shape[1]))
-        pixel_coords = np.array([mask_mesh[1].flatten(),
-                                 mask_mesh[0].flatten()])
+        pixel_coords = np.array([mask_mesh[0].flatten(),
+                                 mask_mesh[1].flatten()])
 
         x0 = pixel_coords[0,:].min()
         y0 = pixel_coords[1,:].min()
