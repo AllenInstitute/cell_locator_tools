@@ -295,8 +295,7 @@ class BrainSliceImage(object):
         mask_mesh = np.meshgrid(np.arange(mask.shape[0]), np.arange(mask.shape[1]))
         pixel_coords = np.array([mask_mesh[1].flatten(),
                                  mask_mesh[0].flatten()])
-        wc_coords = annotation.pixels_to_wc(pixel_coords)
-        pixel_coords = self.brain_slice.slice_to_pixel(wc_coords)
+
         x0 = pixel_coords[0,:].min()
         y0 = pixel_coords[1,:].min()
 
