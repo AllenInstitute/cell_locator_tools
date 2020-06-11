@@ -214,6 +214,8 @@ class BrainSlice(object):
         valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(brain_volume,
                                                                             self.resolution))
 
+        self._init_valid_dex = np.copy(valid_dex[0])
+
         # find the coordinates of all of the voxels in the slice frame
         slice_coords = coord_converter.allen_to_slice(brain_volume[:,valid_dex[0]])
 
@@ -323,15 +325,31 @@ class BrainVolume(object):
 
         self.brain_volume = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
 
-        mesh = np.meshgrid(resolution*np.arange(self.nx0),
-                           resolution*np.arange(self.ny0),
-                           resolution*np.arange(self.nz0),
+        # z must be first in mesh because flattening img_data
+        # makes z the slowest moving index
+        mesh = np.meshgrid(np.arange(self.nz0),
+                           np.arange(self.ny0),
+                           np.arange(self.nx0),
                            indexing = 'ij')
 
-        self.brain_volume[2,:] = mesh.pop(2).flatten()
-        self.brain_volume[1,:] = mesh.pop(1).flatten()
-        self.brain_volume[0,:] = mesh.pop(0).flatten()
+        self.brain_volume[0,:] = mesh.pop(2).flatten()*resolution
+        self.brain_volume[1,:] = mesh.pop(1).flatten()*resolution
+        self.brain_volume[2,:] = mesh.pop(0).flatten()*resolution
         self.resolution = resolution
+
+        #print('checking flattening')
+        #for ix,iy,iz in zip(self.brain_volume[0,:],self.brain_volume[1,:],self.brain_volume[2,:]):
+        #    ii = iz*self.nx0*self.ny0+iy*self.nx0+ix
+        #    assert self.img_data[ii] == img_data[iz,iy,ix]
+        #    print(ii)
+        #    print(ix,iy,iz)
+        #    print(self.brain_volume[0,ii])
+        #    print(self.brain_volume[1,ii])
+        #    print(self.brain_volume[2,ii])
+        #    assert self.brain_volume[2,ii] == iz
+        #    assert self.brain_volume[1,ii] == iy
+        #    assert self.brain_volume[0,ii] == ix
+        #self.brain_volume = self.brain_volume.astype(int)*resolution
 
     def allen_to_voxel(self, allen_coords):
         pixel_coords = np.round(allen_coords/self.resolution).astype(int)
@@ -419,6 +437,10 @@ class BrainVolume(object):
          new_img_dex_flat,
                   n_img_cols,
                   n_img_rows) = self.pixel_mask_from_BrainSlice(brain_slice)
+
+        overlap = np.isin(img_dex_flat, brain_slice._init_valid_dex)
+        print('is in sum %d' % overlap.sum())
+        print('of ',img_dex_flat.shape)
 
         pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_rows*n_img_cols, dtype=float)
