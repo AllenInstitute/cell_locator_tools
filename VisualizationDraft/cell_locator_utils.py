@@ -406,11 +406,7 @@ class BrainVolume(object):
 
         # find the 3D voxels that actually fall within the 2D slice
         new_allen_coords = brain_slice.coord_converter.slice_to_allen(new_img_pts)
-        print('new_allen_coords')
-        print(new_allen_coords)
         new_allen_voxels, voxel_mask = self.allen_to_voxel(new_allen_coords)
-        print('new allen voxels')
-        print(new_allen_voxels[:,voxel_mask])
 
         ix_arr = img_ix[voxel_mask]
         iy_arr = img_iy[voxel_mask]
@@ -423,12 +419,6 @@ class BrainVolume(object):
 
         # get the image values from the atlas data and create a new image
         img_dex_flat = az_arr*(self.nx0*self.ny0)+ay_arr*self.nx0+ax_arr
-        print('x in vol')
-        print(self.brain_volume[0,img_dex_flat])
-        print(self.brain_volume[0,:])
-        print(self.brain_volume[1,:])
-        print(self.brain_volume[2,:])
-
 
         return img_dex_flat, new_img_dex_flat, brain_slice.n_cols, brain_slice.n_rows
 
