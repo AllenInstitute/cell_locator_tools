@@ -95,11 +95,13 @@ if __name__ == "__main__":
     #print('dummy ',dummy_slice_img.img.sum())
     #print('diff ',(slice_img.img.sum()-dummy_slice_img.img.sum())/val)
 
+    final_img = np.flip(dummy_slice_img.img, axis=1)
+
     plt.figure(figsize=(10,10))
     plt.subplot(1,2,1)
     plt.imshow(slice_img.img)
     plt.subplot(1,2,2)
-    plt.imshow(dummy_slice_img.img)
+    plt.imshow(final_img)
     plt.savefig('use_voxel_mask.pdf')
     exit()
 
