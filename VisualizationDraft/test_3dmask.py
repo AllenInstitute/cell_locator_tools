@@ -56,18 +56,18 @@ if __name__ == "__main__":
     valid_voxels = np.isin(test_pixel_indices, good_pixel_indices)
     print('got valid_voxels in %e seconds' % (time.time()-t0))
 
-    print('valid voxels %d' % valid_voxels.sum())
-    print(test_pixel_indices.dtype)
-    print(good_pixel_indices.dtype)
-    print(good_pixel_indices[:10])
-    print(test_pixel_indices[:10])
+    #print('valid voxels %d' % valid_voxels.sum())
+    #print(test_pixel_indices.dtype)
+    #print(good_pixel_indices.dtype)
+    #print(good_pixel_indices[:10])
+    #print(test_pixel_indices[:10])
 
-    print(pixel_coords.shape)
-    print(brain_vol.brain_volume.shape)
+    #print(pixel_coords.shape)
+    #print(brain_vol.brain_volume.shape)
 
     for ix in range(2):
         assert np.isnan(pixel_coords[ix,:][valid_voxels]).sum() == 0
-        print('pix %d '% ix, pixel_coords[ix,:])
+        #print('pix %d '% ix, pixel_coords[ix,:])
 
     dummy_brain_vol.img_data = dummy_brain_vol.img_data.astype(float)
 
@@ -75,16 +75,16 @@ if __name__ == "__main__":
     s0 = dummy_brain_vol.img_data.sum()
     dummy_brain_vol.img_data[valid_voxels] += 2*val
     s1 = dummy_brain_vol.img_data.sum()
-    print('difference of sums ',(s1-s0)/val,val,dummy_brain_vol.img_data.dtype)
-    print('valid_voxel shape ',valid_voxels.shape, valid_voxels.sum())
-    print(dummy_brain_vol.img_data.shape)
+    #print('difference of sums ',(s1-s0)/val,val,dummy_brain_vol.img_data.dtype)
+    #print('valid_voxel shape ',valid_voxels.shape, valid_voxels.sum())
+    #print(dummy_brain_vol.img_data.shape)
     dummy_slice_img = dummy_brain_vol.slice_img_from_annotation(annotation_name,
                                                     from_pts=True)
 
     assert not np.array_equal(slice_img.img, dummy_slice_img.img)
-    print('slice ',slice_img.img.sum())
-    print('dummy ',dummy_slice_img.img.sum())
-    print('diff ',(slice_img.img.sum()-dummy_slice_img.img.sum())/val)
+    #print('slice ',slice_img.img.sum())
+    #print('dummy ',dummy_slice_img.img.sum())
+    #print('diff ',(slice_img.img.sum()-dummy_slice_img.img.sum())/val)
 
     plt.figure(figsize=(10,10))
     plt.subplot(1,2,1)
