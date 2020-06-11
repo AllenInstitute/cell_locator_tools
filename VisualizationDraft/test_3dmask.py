@@ -32,7 +32,7 @@ if __name__ == "__main__":
     markup = annotation_dict['Markups'][0]
     t0 = time.time()
     annotation = slice_img.brain_slice.annotation_from_markup(markup)
-    pixel_mask = annotation.get_mask(25)
+    raw_mask = annotation.get_mask(25)
     print('returned mask in %e' % (time.time()-t0))
 
     (pixel_coords,
@@ -45,13 +45,16 @@ if __name__ == "__main__":
     max_y = np.nanmax(pixel_coords[1,:]).astype(int)+1
     print('nanmax %e' % (time.time()-t1))
 
+    pixel_mask = np.zeros((max_x, max_y), dtype=bool)
+    raw_mask = raw_mask.transpose()
+    pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
     good_pixels = np.where(pixel_mask)
-    print('np.where in %e' % (time.time()-t0))
-    good_pixel_indices = good_pixels[1]*max_y + good_pixels[0]
-    print('good pixels in %e' % (time.time()-t0))
+    good_pixel_indices = good_pixels[0]*max_y + good_pixels[1]
 
     test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
     print('test_pixels in %e' % (time.time()-t0))
+
+    # can test_pixels be an index on good_pixel_indices
 
     valid_voxels = np.isin(test_pixel_indices, good_pixel_indices)
     print('got valid_voxels in %e seconds' % (time.time()-t0))
