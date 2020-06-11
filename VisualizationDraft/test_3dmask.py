@@ -79,9 +79,10 @@ if __name__ == "__main__":
 
     dummy_brain_vol.img_data = dummy_brain_vol.img_data.astype(float)
 
-    val = dummy_brain_vol.img_data.max()
+    val = np.median(dummy_brain_vol.img_data[valid_voxels])
     s0 = dummy_brain_vol.img_data.sum()
     dummy_brain_vol.img_data[valid_voxels] += 2*val
+    #dummy_brain_vol.img_data[valid_voxels] *= 0.5
     s1 = dummy_brain_vol.img_data.sum()
     #print('difference of sums ',(s1-s0)/val,val,dummy_brain_vol.img_data.dtype)
     #print('valid_voxel shape ',valid_voxels.shape, valid_voxels.sum())
