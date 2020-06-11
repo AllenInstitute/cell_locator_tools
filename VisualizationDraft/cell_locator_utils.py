@@ -325,15 +325,20 @@ class BrainVolume(object):
 
         self.brain_volume = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
 
-        mesh = np.meshgrid(resolution*np.arange(self.nx0),
-                           resolution*np.arange(self.ny0),
-                           resolution*np.arange(self.nz0),
+        mesh = np.meshgrid(np.arange(self.nx0),
+                           np.arange(self.ny0),
+                           np.arange(self.nz0),
                            indexing = 'ij')
 
-        self.brain_volume[2,:] = mesh.pop(2).flatten()
-        self.brain_volume[1,:] = mesh.pop(1).flatten()
-        self.brain_volume[0,:] = mesh.pop(0).flatten()
+        self.brain_volume[2,:] = mesh.pop(2).flatten()*resolution
+        self.brain_volume[1,:] = mesh.pop(1).flatten()*resolution
+        self.brain_volume[0,:] = mesh.pop(0).flatten()*resolution
         self.resolution = resolution
+
+        #print('checking flattening')
+        #for ix,iy,iz in zip(self.brain_volume[0,:],self.brain_volume[1,:],self.brain_volume[2,:]):
+        #    ii = iz*self.nx0*self.ny0+iy*self.nx0+ix
+        #    assert self.img_data[ii] == img_data[iz,iy,ix]
 
     def allen_to_voxel(self, allen_coords):
         pixel_coords = np.round(allen_coords/self.resolution).astype(int)
