@@ -214,6 +214,8 @@ class BrainSlice(object):
         valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(brain_volume,
                                                                             self.resolution))
 
+        self._init_valid_dex = np.copy(valid_dex[0])
+
         # find the coordinates of all of the voxels in the slice frame
         slice_coords = coord_converter.allen_to_slice(brain_volume[:,valid_dex[0]])
 
@@ -419,6 +421,10 @@ class BrainVolume(object):
          new_img_dex_flat,
                   n_img_cols,
                   n_img_rows) = self.pixel_mask_from_BrainSlice(brain_slice)
+
+        overlap = np.isin(img_dex_flat, brain_slice._init_valid_dex)
+        print('is in sum %d' % overlap.sum())
+        print('of ',img_dex_flat.shape)
 
         pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_rows*n_img_cols, dtype=float)
