@@ -41,8 +41,8 @@ if __name__ == "__main__":
     old_valid = valid
 
     t1 = time.time()
-    max_x = np.nanmax(pixel_coords[0,:]).astype(int)+1
-    max_y = np.nanmax(pixel_coords[1,:]).astype(int)+1
+    max_x = pixel_coords[0,:].max()+1
+    max_y = pixel_coords[1,:].max()+1
     print('nanmax %e' % (time.time()-t1))
 
     t1 = time.time()
