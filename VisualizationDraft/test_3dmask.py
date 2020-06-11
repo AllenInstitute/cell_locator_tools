@@ -48,16 +48,21 @@ if __name__ == "__main__":
     pixel_mask = np.zeros((max_x, max_y), dtype=bool)
     raw_mask = raw_mask.transpose()
     pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
-    good_pixels = np.where(pixel_mask)
-    good_pixel_indices = good_pixels[0]*max_y + good_pixels[1]
+    pixel_mask = pixel_mask.flatten()
+
+    in_bounds = np.logical_and(pixel_coords[0,:]>=0,
+                               pixel_coords[1,:]>=0)
 
     test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
+
     print('test_pixels in %e' % (time.time()-t0))
 
     # can test_pixels be an index on good_pixel_indices
 
-    valid_voxels = np.isin(test_pixel_indices, good_pixel_indices)
-    print('got valid_voxels in %e seconds' % (time.time()-t0))
+    valid_voxels = np.zeros(test_pixel_indices.shape, dtype=bool)
+    valid_voxels[in_bounds] = pixel_mask[test_pixel_indices[in_bounds]]
+    print('got valid_voxels in %e seconds -- %d' % ((time.time()-t0), valid_voxels.sum()))
+    print('shape ',valid_voxels.shape)
 
     #print('valid voxels %d' % valid_voxels.sum())
     #print(test_pixel_indices.dtype)
