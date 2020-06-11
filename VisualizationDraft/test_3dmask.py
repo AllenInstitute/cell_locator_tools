@@ -31,51 +31,11 @@ if __name__ == "__main__":
         annotation_dict = json.load(in_file)
     markup = annotation_dict['Markups'][0]
     t0 = time.time()
-    annotation = slice_img.brain_slice.annotation_from_markup(markup)
-    raw_mask = annotation.get_mask(25)
-    print('returned mask in %e' % (time.time()-t0))
 
-    (pixel_coords,
-         in_bounds) = slice_img.brain_slice.allen_to_pixel(brain_vol.brain_volume)
-    print('pixel coords %e' % (time.time()-t0))
-
-    t1 = time.time()
-    max_x = pixel_coords[0,:].max()+1
-    max_y = pixel_coords[1,:].max()+1
-    print('nanmax %e' % (time.time()-t1))
-
-    t1 = time.time()
-    pixel_mask = np.zeros((max_x, max_y), dtype=bool)
-    raw_mask = raw_mask.transpose()
-    pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
-    pixel_mask = pixel_mask.flatten()
-    print('pixel mask took %e' % (time.time()-t1))
-    test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
-
-    print('test_pixels in %e' % (time.time()-t0))
-
-    # can test_pixels be an index on good_pixel_indices
-
-    t1 = time.time()
-    valid_voxels = np.zeros(test_pixel_indices.shape, dtype=bool)
-    valid_voxels[in_bounds] = pixel_mask[test_pixel_indices[in_bounds]]
-    print('last step %e' % (time.time()-t1))
+    valid_voxels = brain_vol.get_voxel_mask(slice_img.brain_slice, markup)
     print('\n')
     print('got valid_voxels in %e seconds -- %d' % ((time.time()-t0), valid_voxels.sum()))
     print('shape ',valid_voxels.shape)
-
-    #print('valid voxels %d' % valid_voxels.sum())
-    #print(test_pixel_indices.dtype)
-    #print(good_pixel_indices.dtype)
-    #print(good_pixel_indices[:10])
-    #print(test_pixel_indices[:10])
-
-    #print(pixel_coords.shape)
-    #print(brain_vol.brain_volume.shape)
-
-    for ix in range(2):
-        assert np.isnan(pixel_coords[ix,:][valid_voxels]).sum() == 0
-        #print('pix %d '% ix, pixel_coords[ix,:])
 
     dummy_brain_vol.img_data = dummy_brain_vol.img_data.astype(float)
 

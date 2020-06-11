@@ -450,3 +450,19 @@ class BrainVolume(object):
         new_img = new_img.reshape(n_img_rows, n_img_cols)
 
         return BrainSliceImage(brain_slice, new_img)
+
+    def get_voxel_mask(self, brain_slice, markup):
+        annotation = brain_slice.annotation_from_markup(markup)
+        raw_mask = annotation.get_mask(self.resolution)
+        (pixel_coords,
+             in_bounds) = brain_slice.allen_to_pixel(self.brain_volume)
+        max_x = pixel_coords[0,:].max()+1
+        max_y = pixel_coords[1,:].max()+1
+        pixel_mask = np.zeros((max_x, max_y), dtype=bool)
+        raw_mask = raw_mask.transpose()
+        pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
+        pixel_mask = pixel_mask.flatten()
+        test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
+        valid_voxels = np.zeros(test_pixel_indices.shape, dtype=bool)
+        valid_voxels[in_bounds] = pixel_mask[test_pixel_indices[in_bounds]]
+        return valid_voxels
