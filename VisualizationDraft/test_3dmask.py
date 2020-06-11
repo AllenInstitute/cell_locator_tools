@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10,10))
     plt.subplot(1,2,1)
-    plt.imshow(slice_img.img)
+    plt.imshow(np.flip(slice_img.img,axis=1))
     plt.subplot(1,2,2)
     plt.imshow(final_img)
     plt.savefig('use_voxel_mask.pdf')
