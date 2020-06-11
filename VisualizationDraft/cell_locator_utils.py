@@ -154,7 +154,7 @@ class CellLocatorTransformation(object):
         it contains the x,y,z coordinate values of the allen pixels
         """
         z_value = np.dot(self._a_to_slice[2,:3], pts)+self._a_to_slice[2,3]
-        return np.abs(z_value)<resolution
+        return np.abs(z_value)<0.5*np.sqrt(3.0)*resolution
 
 
 class BrainSlice(object):
