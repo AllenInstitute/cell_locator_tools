@@ -203,6 +203,10 @@ class BrainSlice(object):
     def n_cols(self):
         return self._n_cols
 
+    @property
+    def valid_mask(self):
+        return self._valid_mask
+
     def __init__(self, coord_converter, resolution, brain_volume):
         """
         brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
@@ -211,11 +215,11 @@ class BrainSlice(object):
         self._resolution = resolution
 
         # find all of the voxels that are actually in the slice
-        valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(brain_volume,
-                                                                            self.resolution))
+        self._valid_mask = self.coord_converter.get_slice_mask_from_allen(brain_volume,
+                                                                          self.resolution)
 
         # find the coordinates of all of the voxels in the slice frame
-        slice_coords = coord_converter.allen_to_slice(brain_volume[:,valid_dex[0]])
+        slice_coords = coord_converter.allen_to_slice(brain_volume[:,self.valid_mask])
 
         # construct an empty grid to represent the 2D image of the slice
         self._x_min = slice_coords[0,:].min()
@@ -238,12 +242,13 @@ class BrainSlice(object):
         self._y_min_pix= y0
         self._n_rows = y1-y0+1
 
-    def allen_to_pixel(self, allen_coords):
+    def allen_to_pixel(self, allen_coords, valid_mask=None):
         """
         Convert a 3xN array of allen coordinates into pixel coordinates on the slice
         """
-        valid_mask = self.coord_converter.get_slice_mask_from_allen(allen_coords,
-                                                                    self.resolution)
+        if valid_mask is None:
+            valid_mask = self.coord_converter.get_slice_mask_from_allen(allen_coords,
+                                                                        self.resolution)
 
         pixel_coords = -999*np.ones((2,allen_coords.shape[1]), dtype=int)
         slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_mask])
@@ -455,7 +460,8 @@ class BrainVolume(object):
         annotation = brain_slice.annotation_from_markup(markup)
         raw_mask = annotation.get_mask(self.resolution)
         (pixel_coords,
-             in_bounds) = brain_slice.allen_to_pixel(self.brain_volume)
+             in_bounds) = brain_slice.allen_to_pixel(self.brain_volume,
+                                                     valid_mask=brain_slice.valid_mask)
         max_x = pixel_coords[0,:].max()+1
         max_y = pixel_coords[1,:].max()+1
         pixel_mask = np.zeros((max_x, max_y), dtype=bool)
