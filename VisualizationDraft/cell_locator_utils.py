@@ -325,14 +325,16 @@ class BrainVolume(object):
 
         self.brain_volume = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
 
-        mesh = np.meshgrid(np.arange(self.nx0),
+        # z must be first in mesh because flattening img_data
+        # makes z the slowest moving index
+        mesh = np.meshgrid(np.arange(self.nz0),
                            np.arange(self.ny0),
-                           np.arange(self.nz0),
+                           np.arange(self.nx0),
                            indexing = 'ij')
 
-        self.brain_volume[2,:] = mesh.pop(2).flatten()*resolution
+        self.brain_volume[0,:] = mesh.pop(2).flatten()*resolution
         self.brain_volume[1,:] = mesh.pop(1).flatten()*resolution
-        self.brain_volume[0,:] = mesh.pop(0).flatten()*resolution
+        self.brain_volume[2,:] = mesh.pop(0).flatten()*resolution
         self.resolution = resolution
 
         #print('checking flattening')
