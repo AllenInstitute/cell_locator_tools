@@ -36,9 +36,8 @@ if __name__ == "__main__":
     print('returned mask in %e' % (time.time()-t0))
 
     (pixel_coords,
-            valid) = slice_img.brain_slice.allen_to_pixel(brain_vol.brain_volume)
+         in_bounds) = slice_img.brain_slice.allen_to_pixel(brain_vol.brain_volume)
     print('pixel coords %e' % (time.time()-t0))
-    old_valid = valid
 
     t1 = time.time()
     max_x = pixel_coords[0,:].max()+1
@@ -51,12 +50,6 @@ if __name__ == "__main__":
     pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
     pixel_mask = pixel_mask.flatten()
     print('pixel mask took %e' % (time.time()-t1))
-
-    t1 = time.time()
-    in_bounds = np.logical_and(pixel_coords[0,:]>=0,
-                               pixel_coords[1,:]>=0)
-    print('in bounds %e' %(time.time()-t1))
-
     test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
 
     print('test_pixels in %e' % (time.time()-t0))

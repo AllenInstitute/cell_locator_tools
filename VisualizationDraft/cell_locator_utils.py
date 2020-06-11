@@ -242,14 +242,14 @@ class BrainSlice(object):
         """
         Convert a 3xN array of allen coordinates into pixel coordinates on the slice
         """
-        valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(allen_coords,
-                                                                            self.resolution))[0]
+        valid_mask = self.coord_converter.get_slice_mask_from_allen(allen_coords,
+                                                                    self.resolution)
 
         pixel_coords = -999*np.ones((2,allen_coords.shape[1]), dtype=int)
-        slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_dex])
+        slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_mask])
         valid_pixels = self.slice_to_pixel(slice_coords[:2,:])
-        pixel_coords[:,valid_dex] = valid_pixels
-        return pixel_coords, valid_dex
+        pixel_coords[:,valid_mask] = valid_pixels
+        return pixel_coords, valid_mask
 
     def pixel_to_slice(self, pixel_coords):
         return self._slice_to_pixel_transformer.pixels_to_wc(pixel_coords)
