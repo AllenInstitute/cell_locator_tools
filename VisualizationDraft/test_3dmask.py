@@ -23,6 +23,7 @@ if __name__ == "__main__":
 
     annotation_name = '../CellLocatorAnnotations/annotation_20200602.json'
     assert os.path.isfile(annotation_name)
+    t0 = time.time()
 
     slice_img = brain_vol.slice_img_from_annotation(annotation_name,
                                                     from_pts=True)
@@ -30,7 +31,6 @@ if __name__ == "__main__":
     with open(annotation_name, 'rb') as in_file:
         annotation_dict = json.load(in_file)
     markup = annotation_dict['Markups'][0]
-    t0 = time.time()
 
     valid_voxels = brain_vol.get_voxel_mask(slice_img.brain_slice, markup)
     print('\n')
