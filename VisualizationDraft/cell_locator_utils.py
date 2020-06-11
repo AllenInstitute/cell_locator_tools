@@ -436,6 +436,11 @@ class BrainVolume(object):
                   n_img_cols,
                   n_img_rows) = self.pixel_mask_from_BrainSlice(brain_slice)
 
+        print('len(img_dex_flat) %d' % len(img_dex_flat))
+        print('len(unq(img_dex_flat)) %d' % len(np.unique(img_dex_flat)))
+        print('len(new_img_dex_flat) %d' % len(new_img_dex_flat))
+        print('len(unq(new_img_dex_flat)) %d' % len(np.unique(new_img_dex_flat)))
+
         pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_rows*n_img_cols, dtype=float)
         new_img[new_img_dex_flat] = pixel_vals
