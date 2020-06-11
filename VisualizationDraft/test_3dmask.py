@@ -51,7 +51,6 @@ if __name__ == "__main__":
     print('good pixels in %e' % (time.time()-t0))
 
     test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
-    test_pixel_indices = np.where(np.isnan(test_pixel_indices), -999, test_pixel_indices).astype(int)
     print('test_pixels in %e' % (time.time()-t0))
 
     valid_voxels = np.isin(test_pixel_indices, good_pixel_indices)

@@ -245,7 +245,7 @@ class BrainSlice(object):
         valid_dex = np.where(self.coord_converter.get_slice_mask_from_allen(allen_coords,
                                                                             self.resolution))[0]
 
-        pixel_coords = np.NaN*np.ones((2,allen_coords.shape[1]), dtype=int)
+        pixel_coords = -999*np.ones((2,allen_coords.shape[1]), dtype=int)
         slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_dex])
         valid_pixels = self.slice_to_pixel(slice_coords[:2,:])
         pixel_coords[:,valid_dex] = valid_pixels
