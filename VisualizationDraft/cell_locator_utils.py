@@ -442,6 +442,20 @@ class BrainVolume(object):
         print('is in sum %d' % overlap.sum())
         print('of ',img_dex_flat.shape)
 
+        #not_in = np.where(np.logical_not(overlap))[0]
+        #pts = self.brain_volume[:,img_dex_flat[not_in]]
+        #print(pts.shape)
+        #slice_coords = brain_slice.coord_converter.allen_to_slice(pts)
+        #print('not inside')
+        #z = np.abs(slice_coords[2,:])
+        #print(z.min(),np.median(z),z.max())
+
+        #pts = self.brain_volume[:,brain_slice._init_valid_dex]
+        #s = brain_slice.coord_converter.allen_to_slice(pts)
+        #z = np.abs(s[2,:])
+        #print('yes inside')
+        #print(z.min(),np.median(z),z.max())
+
         pixel_vals = self.img_data[img_dex_flat]
         new_img = np.zeros(n_img_rows*n_img_cols, dtype=float)
         new_img[new_img_dex_flat] = pixel_vals
