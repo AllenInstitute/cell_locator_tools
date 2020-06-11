@@ -45,13 +45,17 @@ if __name__ == "__main__":
     max_y = np.nanmax(pixel_coords[1,:]).astype(int)+1
     print('nanmax %e' % (time.time()-t1))
 
+    t1 = time.time()
     pixel_mask = np.zeros((max_x, max_y), dtype=bool)
     raw_mask = raw_mask.transpose()
     pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
     pixel_mask = pixel_mask.flatten()
+    print('pixel mask took %e' % (time.time()-t1))
 
+    t1 = time.time()
     in_bounds = np.logical_and(pixel_coords[0,:]>=0,
                                pixel_coords[1,:]>=0)
+    print('in bounds %e' %(time.time()-t1))
 
     test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
 
@@ -59,8 +63,11 @@ if __name__ == "__main__":
 
     # can test_pixels be an index on good_pixel_indices
 
+    t1 = time.time()
     valid_voxels = np.zeros(test_pixel_indices.shape, dtype=bool)
     valid_voxels[in_bounds] = pixel_mask[test_pixel_indices[in_bounds]]
+    print('last step %e' % (time.time()-t1))
+    print('\n')
     print('got valid_voxels in %e seconds -- %d' % ((time.time()-t0), valid_voxels.sum()))
     print('shape ',valid_voxels.shape)
 
