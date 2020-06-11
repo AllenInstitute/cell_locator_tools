@@ -431,6 +431,9 @@ class BrainVolume(object):
 
         coord_converter = CellLocatorTransformation(annotation, from_pts=from_pts)
         brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume)
+        return self.slice_img_from_BrainSlice(brain_slice)
+
+    def slice_img_from_BrainSlice(self, brain_slice):
         (img_dex_flat,
          new_img_dex_flat,
                   n_img_cols,
