@@ -207,6 +207,14 @@ class BrainSlice(object):
     def valid_mask(self):
         return self._valid_mask
 
+    @property
+    def pixel_x(self):
+        return self._pixel_x
+
+    @property
+    def pixel_y(self):
+        return self._pixel_y
+
     def __init__(self, coord_converter, resolution, brain_volume):
         """
         brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
@@ -241,6 +249,14 @@ class BrainSlice(object):
         y0 = np.round(self.y_min/self.resolution).astype(int)
         self._y_min_pix= y0
         self._n_rows = y1-y0+1
+
+        pixel_coords = self.slice_to_pixel(slice_coords[:2,:])
+
+        self._pixel_x = -999*np.ones(brain_volume.shape[1], dtype=int)
+        self._pixel_y = -999*np.ones(brain_volume.shape[1], dtype=int)
+        self._pixel_x[self.valid_mask] = pixel_coords[0,:]
+        self._pixel_y[self.valid_mask] = pixel_coords[1,:]
+
 
     def allen_to_pixel(self, allen_coords, valid_mask=None):
         """
@@ -459,16 +475,13 @@ class BrainVolume(object):
     def get_voxel_mask(self, brain_slice, markup):
         annotation = brain_slice.annotation_from_markup(markup)
         raw_mask = annotation.get_mask(self.resolution)
-        (pixel_coords,
-             in_bounds) = brain_slice.allen_to_pixel(self.brain_volume,
-                                                     valid_mask=brain_slice.valid_mask)
-        max_x = pixel_coords[0,:].max()+1
-        max_y = pixel_coords[1,:].max()+1
+        max_x = brain_slice.pixel_x.max()+1
+        max_y = brain_slice.pixel_y.max()+1
         pixel_mask = np.zeros((max_x, max_y), dtype=bool)
         raw_mask = raw_mask.transpose()
         pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
         pixel_mask = pixel_mask.flatten()
-        test_pixel_indices = pixel_coords[0,:]*max_y+pixel_coords[1,:]
+        test_pixel_indices = brain_slice.pixel_x*max_y+brain_slice.pixel_y
         valid_voxels = np.zeros(test_pixel_indices.shape, dtype=bool)
-        valid_voxels[in_bounds] = pixel_mask[test_pixel_indices[in_bounds]]
+        valid_voxels[brain_slice.valid_mask] = pixel_mask[test_pixel_indices[brain_slice.valid_mask]]
         return valid_voxels
