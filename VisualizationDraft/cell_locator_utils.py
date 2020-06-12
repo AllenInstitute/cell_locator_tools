@@ -12,6 +12,8 @@ import numpy as np
 import json
 import copy
 
+import time
+
 class CellLocatorTransformation(object):
 
     @property
@@ -219,6 +221,7 @@ class BrainSlice(object):
         """
         brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
         """
+        t0 = time.time()
         self._coord_converter = coord_converter
         self._resolution = resolution
 
@@ -253,6 +256,7 @@ class BrainSlice(object):
         pixel_coords = self.slice_to_pixel(slice_coords[:2,:])
         self._pixel_x = pixel_coords[0,:]
         self._pixel_y = pixel_coords[1,:]
+        print('BrainSlice init took %e' % (time.time()-t0))
 
 
     def allen_to_pixel(self, allen_coords, valid_mask=None):
@@ -470,6 +474,7 @@ class BrainVolume(object):
         return BrainSliceImage(brain_slice, new_img)
 
     def get_voxel_mask(self, brain_slice, markup):
+        t0 = time.time()
         annotation = brain_slice.annotation_from_markup(markup)
         raw_mask = annotation.get_mask(self.resolution)
         max_x = brain_slice.pixel_x.max()+1
@@ -482,4 +487,5 @@ class BrainVolume(object):
         test_pixel_indices += brain_slice.pixel_y
         valid_voxels = np.zeros(self.brain_volume.shape[1], dtype=bool)
         valid_voxels[brain_slice.valid_mask] = pixel_mask[test_pixel_indices]
+        print('actual valid voxel method took %e' % (time.time()-t0))
         return valid_voxels
