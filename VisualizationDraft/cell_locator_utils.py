@@ -251,11 +251,8 @@ class BrainSlice(object):
         self._n_rows = y1-y0+1
 
         pixel_coords = self.slice_to_pixel(slice_coords[:2,:])
-
-        self._pixel_x = -999*np.ones(brain_volume.shape[1], dtype=int)
-        self._pixel_y = -999*np.ones(brain_volume.shape[1], dtype=int)
-        self._pixel_x[self.valid_mask] = pixel_coords[0,:]
-        self._pixel_y[self.valid_mask] = pixel_coords[1,:]
+        self._pixel_x = pixel_coords[0,:]
+        self._pixel_y = pixel_coords[1,:]
 
 
     def allen_to_pixel(self, allen_coords, valid_mask=None):
@@ -475,14 +472,14 @@ class BrainVolume(object):
     def get_voxel_mask(self, brain_slice, markup):
         annotation = brain_slice.annotation_from_markup(markup)
         raw_mask = annotation.get_mask(self.resolution)
-        max_x = brain_slice.pixel_x[brain_slice.valid_mask].max()+1
-        max_y = brain_slice.pixel_y[brain_slice.valid_mask].max()+1
+        max_x = brain_slice.pixel_x.max()+1
+        max_y = brain_slice.pixel_y.max()+1
         pixel_mask = np.zeros((max_x, max_y), dtype=bool)
         raw_mask = raw_mask.transpose()
         pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
         pixel_mask = pixel_mask.flatten()
-        test_pixel_indices = brain_slice.pixel_x[brain_slice.valid_mask]*max_y
-        test_pixel_indices += brain_slice.pixel_y[brain_slice.valid_mask]
-        valid_voxels = np.zeros(brain_slice.pixel_x.shape, dtype=bool)
+        test_pixel_indices = brain_slice.pixel_x*max_y
+        test_pixel_indices += brain_slice.pixel_y
+        valid_voxels = np.zeros(self.brain_volume.shape[1], dtype=bool)
         valid_voxels[brain_slice.valid_mask] = pixel_mask[test_pixel_indices]
         return valid_voxels
