@@ -367,7 +367,8 @@ class Annotation(object):
         cx = None
         cy = None
         for ix, iy in zip(self._border_x_pixels, self._border_y_pixels):
-            for d in ((10,0), (-10,0), (0,10), (0, -10)):
+            for d in ((10,0), (-10,0), (0,10), (0, -10),
+                      (10, 10), (10, -10), (-10, -10), (-10, 10)):
                 r, c = self._get_cross(ix+d[0], iy+d[1], mask)
                 if len(r)>3 and len(c)>0:
                     cx = r[len(r)//2]
