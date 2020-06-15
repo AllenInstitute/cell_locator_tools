@@ -102,12 +102,16 @@ class Plane(object):
             raise RuntimeError("Cannot set origin; this point not in plane")
         self._origin = np.copy(origin_in)
 
-    def in_plane(self, pt):
+    def in_plane(self, pt, tol=None):
+        if tol is not None:
+            local_eps = tol
+        else:
+            local_eps = self.eps
         v = v_from_pts(pt, self.origin)
         d = np.abs(np.dot(v, self.normal))
-        if d<self.eps:
+        if d<local_eps:
             return True
-        print('not in plane: %e' % d)
+        print('not in plane: %e (tol %e)' % (d, local_eps))
         return False
 
     @classmethod
@@ -137,6 +141,20 @@ class Plane(object):
         p = cls.plane_from_points(planar_pts[0],
                                   planar_pts[1],
                                   planar_pts[2])
+
+        d_sum = 0.0
+        d_ct = 0.0
+        for i1 in range(len(pt_list)):
+            for i2 in range(i1+1, len(pt_list), 1):
+                d = np.sqrt(np.sum(pt_list[i1]-pt_list[i2])**2)
+                d_sum += d
+                d_ct += 1.0
+        d_avg = d_sum/d_ct
+
         for pt in pt_list:
-            assert p.in_plane(pt)
+            #print('')
+            #print(pt_list)
+            #print(planar_pts)
+            #print(d_avg)
+            assert p.in_plane(pt, tol=1.0e-2*d_avg)
         return p
