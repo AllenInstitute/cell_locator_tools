@@ -345,45 +345,11 @@ class AnnotationBase(object):
                                              threshold_factor=threshold_factor)
         return self._mask
 
-
-class SplineAnnotation(AnnotationBase):
-
     def _build_boundary(self, resolution, threshold_factor):
-        self._spline = Spline2D(self._x_vals, self._y_vals)
         self._clean_border()
 
-        border_x = []
-        border_y = []
-        n_segments = len(self._spline.x)
-        self._border_interpolator = []
-        for i1 in range(n_segments):
-            if i1<n_segments-1:
-                i2 = i1+1
-            else:
-                i2 = 0
-            d_max = 10.0*resolution
-
-            # sample each curve at a fine enough resolution
-            # that we will get all of the border pixels
-            tt = np.arange(0.0, 1.01, 0.1)
-            d_threshold = threshold_factor*resolution
-            while d_max>d_threshold:
-                xx, yy = self._spline.values(i1, tt)
-                dx = np.abs(xx[:-1]-xx[1:])
-                dy = np.abs(yy[:-1]-yy[1:])
-                dist = np.where(dx>dy,dx,dy)
-                d_max = dist.max()
-                if d_max>d_threshold:
-                   bad_dex = np.where(dist>d_threshold)[0]
-                   new_t = tt[bad_dex]+0.5*(tt[bad_dex+1]-tt[bad_dex])
-                   tt = np.sort(np.concatenate([tt, new_t]))
-            self._border_interpolator.append({'t':tt,
-                                              'x':xx,
-                                              'y':yy})
-            border_x.append(xx)
-            border_y.append(yy)
-        border_x = np.concatenate(border_x)
-        border_y = np.concatenate(border_y)
+        (border_x,
+         border_y) = self._build_raw_boundary(resolution, threshold_factor)
 
         just_made_coord_transform = False
         if self.coord_transform is None:
@@ -438,6 +404,44 @@ class SplineAnnotation(AnnotationBase):
         for iy in np.unique(self._border_y_pixels_by_y):
             valid = np.where(self._border_y_pixels_by_y==iy)
             self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
+
+class SplineAnnotation(AnnotationBase):
+
+    def _build_raw_boundary(self, resolution, threshold_factor):
+        border_x = []
+        border_y = []
+        self._spline = Spline2D(self._x_vals, self._y_vals)
+        n_segments = len(self._spline.x)
+        self._border_interpolator = []
+        for i1 in range(n_segments):
+            if i1<n_segments-1:
+                i2 = i1+1
+            else:
+                i2 = 0
+            d_max = 10.0*resolution
+
+            # sample each curve at a fine enough resolution
+            # that we will get all of the border pixels
+            tt = np.arange(0.0, 1.01, 0.1)
+            d_threshold = threshold_factor*resolution
+            while d_max>d_threshold:
+                xx, yy = self._spline.values(i1, tt)
+                dx = np.abs(xx[:-1]-xx[1:])
+                dy = np.abs(yy[:-1]-yy[1:])
+                dist = np.where(dx>dy,dx,dy)
+                d_max = dist.max()
+                if d_max>d_threshold:
+                   bad_dex = np.where(dist>d_threshold)[0]
+                   new_t = tt[bad_dex]+0.5*(tt[bad_dex+1]-tt[bad_dex])
+                   tt = np.sort(np.concatenate([tt, new_t]))
+            self._border_interpolator.append({'t':tt,
+                                              'x':xx,
+                                              'y':yy})
+            border_x.append(xx)
+            border_y.append(yy)
+        border_x = np.concatenate(border_x)
+        border_y = np.concatenate(border_y)
+        return border_x, border_y
 
 
 
