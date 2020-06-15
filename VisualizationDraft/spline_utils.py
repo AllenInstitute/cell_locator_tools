@@ -405,13 +405,11 @@ class AnnotationBase(object):
             valid = np.where(self._border_y_pixels_by_y==iy)
             self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
 
-class SplineAnnotation(AnnotationBase):
-
     def _build_raw_boundary(self, resolution, threshold_factor):
         border_x = []
         border_y = []
-        self._spline = Spline2D(self._x_vals, self._y_vals)
-        n_segments = len(self._spline.x)
+        self._setup_drawing()
+        n_segments = self.n_segments()
         self._border_interpolator = []
         for i1 in range(n_segments):
             if i1<n_segments-1:
@@ -425,7 +423,7 @@ class SplineAnnotation(AnnotationBase):
             tt = np.arange(0.0, 1.01, 0.1)
             d_threshold = threshold_factor*resolution
             while d_max>d_threshold:
-                xx, yy = self._spline.values(i1, tt)
+                xx, yy = self._draw(i1, tt)
                 dx = np.abs(xx[:-1]-xx[1:])
                 dy = np.abs(yy[:-1]-yy[1:])
                 dist = np.where(dx>dy,dx,dy)
@@ -442,6 +440,19 @@ class SplineAnnotation(AnnotationBase):
         border_x = np.concatenate(border_x)
         border_y = np.concatenate(border_y)
         return border_x, border_y
+
+
+class SplineAnnotation(AnnotationBase):
+
+    def n_segments(self):
+        return len(self._spline.x)
+
+    def _setup_drawing(self):
+        self._spline = Spline2D(self._x_vals, self._y_vals)
+
+    def _draw(self, i_segment, t_values):
+        return self._spline.values(i_segment, t_values)
+
 
 
 
