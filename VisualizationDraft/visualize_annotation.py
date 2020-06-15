@@ -21,6 +21,7 @@ if __name__ == "__main__":
     parser.add_argument('--annotation', type=str, default=None)
     parser.add_argument('--pts', action='store_true', default=False)
     parser.add_argument('--outname', type=str, default='annotation.pdf')
+    parser.add_argument('--spline', action='store_true', default=False)
     args = parser.parse_args()
 
     if args.annotation is None:
@@ -38,7 +39,8 @@ if __name__ == "__main__":
     with open(args.annotation, 'rb') as in_file:
         full_annotation = json.load(in_file)
     markup = full_annotation['Markups'][0]
-    annotation = slice_img.brain_slice.annotation_from_markup(markup)
+    annotation = slice_img.brain_slice.annotation_from_markup(markup,
+                                                              spline=args.spline)
 
     ann_mask = annotation.get_mask(slice_img.brain_slice.resolution)
     ann_mask = annotation.get_mask(slice_img.brain_slice.resolution)
@@ -49,8 +51,8 @@ if __name__ == "__main__":
     ann_mask_wc = annotation.pixels_to_wc(ann_mask_pix)
     ann_mask_pix = slice_img.brain_slice.slice_to_pixel(ann_mask_wc)
 
-    ann_sp_pix = slice_img.brain_slice.slice_to_pixel(np.array([annotation._spline.x,
-                                                      annotation._spline.y]))
+    ann_sp_pix = slice_img.brain_slice.slice_to_pixel(np.array([annotation._x_vals,
+                                                      annotation._y_vals]))
 
     t_mask = ann_mask
 
@@ -87,11 +89,11 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10,10))
     t_arr = np.arange(0.01,1.01,0.01)
-    for ii in range(len(annotation._spline.x)):
+    for ii in range(annotation.n_segments()):
         if ii%3==0:
             plt.subplot(3,3,(ii//3)+1)
             plt.title('%d' % ii)
-        xx,yy = annotation._spline.values(ii,t_arr)
+        xx,yy = annotation._draw(ii,t_arr)
         plt.plot(xx,yy)
         plt.plot([xx[0],xx[-1]],[yy[0],yy[-1]], color='r', linestyle='--')
     plt.savefig('spline_segments.pdf')

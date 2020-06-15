@@ -454,6 +454,36 @@ class SplineAnnotation(AnnotationBase):
         return self._spline.values(i_segment, t_values)
 
 
+class PolyLineAnnotation(AnnotationBase):
+
+    def n_segments(self):
+        return len(self._x_vals)
+
+    def _setup_drawing(self):
+        n_segments = self.n_segments()
+        self._x_slopes = np.zeros(n_segments, dtype=float)
+        self._x_intercepts = np.zeros(n_segments, dtype=float)
+        self._y_slopes = np.zeros(n_segments, dtype=float)
+        self._y_intercepts = np.zeros(n_segments, dtype=float)
+
+        end_pts = []
+        for ii in range(n_segments-1):
+            end_pts.append((self._x_vals[ii], self._y_vals[ii],
+                            self._x_vals[ii+1], self._y_vals[ii+1]))
+
+        end_pts.append((self._x_vals[-1], self._y_vals[-1],
+                        self._x_vals[0], self._y_vals[0]))
+
+        for i_segment, (x0, y0, x1, y1) in enumerate(end_pts):
+            self._x_slopes[i_segment] = x1-x0
+            self._x_intercepts[i_segment] = x1-self._x_slopes[i_segment]
+            self._y_slopes[i_segment] = y1-y0
+            self._y_intercepts[i_segment] = y1-self._y_slopes[i_segment]
+
+    def _draw(self, i_segment, t_values):
+        xx = self._x_intercepts[i_segment] + t_values*self._x_slopes[i_segment]
+        yy = self._y_intercepts[i_segment] + t_values*self._y_slopes[i_segment]
+        return xx, yy
 
 
 if __name__ == "__main__":
