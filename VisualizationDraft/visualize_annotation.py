@@ -72,7 +72,10 @@ if __name__ == "__main__":
         slice_img.img[iy,ix] = 3*val
 
     plt.figure(figsize=(15,15))
-    plt.imshow(slice_img.img,zorder=1)
+    if args.pts:
+        plt.imshow(slice_img.img,zorder=1)
+    else:
+        plt.imshow(np.flip(slice_img.img, axis=0), zorder=1)
     plt.scatter(ann_sp_pix[0,:], ann_sp_pix[1,:],
                 color='r', zorder=2, s=1, marker='o', alpha=0.5)
     plt.savefig(args.outname)
