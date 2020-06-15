@@ -279,7 +279,7 @@ class BrainSlice(object):
     def slice_to_pixel(self, slice_coords):
         return self._slice_to_pixel_transformer.wc_to_pixels(slice_coords)
 
-    def annotation_from_markup(self, markup):
+    def annotation_from_markup(self, markup, spline=True):
 
         markup_pts = np.zeros((3,len(markup['Points'])), dtype=float)
         for i_p, p in enumerate(markup['Points']):
@@ -290,8 +290,15 @@ class BrainSlice(object):
         markup_slice_coords = self.coord_converter.c_to_slice(markup_pts)
         markup_slice_pixels = self.slice_to_pixel(markup_slice_coords[:2,:])
 
-        annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:],
-                                             pixel_transformer=self._slice_to_pixel_transformer)
+        if spline:
+            annotation = spline_utils.SplineAnnotation(markup_slice_coords[0,:],
+                                                       markup_slice_coords[1,:],
+                                                       pixel_transformer=self._slice_to_pixel_transformer)
+        else:
+            annotation = spline_utils.PolyLineAnnotation(markup_slice_coords[0,:],
+                                                         markup_slice_coords[1,:],
+                                                         pixel_transformer=self._slice_to_pixel_transformer)
+
         return annotation
 
 
@@ -473,9 +480,9 @@ class BrainVolume(object):
 
         return BrainSliceImage(brain_slice, new_img)
 
-    def get_voxel_mask(self, brain_slice, markup):
+    def get_voxel_mask(self, brain_slice, markup, spline=True):
         t0 = time.time()
-        annotation = brain_slice.annotation_from_markup(markup)
+        annotation = brain_slice.annotation_from_markup(markup, spline=spline)
         raw_mask = annotation.get_mask(self.resolution)
         max_x = brain_slice.pixel_x.max()+1
         max_y = brain_slice.pixel_y.max()+1

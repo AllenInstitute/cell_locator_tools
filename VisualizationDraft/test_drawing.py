@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from spline_utils import Spline2D, Annotation
+from spline_utils import Spline2D, SplineAnnotation
 
 import numpy as np
 
@@ -32,7 +32,7 @@ def draw_shape(xx, yy, out_name, n_t=100):
         return y_v/resolution
 
     img = np.zeros((1000,1000), dtype=float)
-    ann = Annotation(xx, yy)
+    ann = SplineAnnotation(xx, yy)
     mask = ann.get_mask(resolution)
 
     dx = min(mask.shape[1], img.shape[1]-ann.x_min)
