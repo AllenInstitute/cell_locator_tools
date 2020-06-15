@@ -385,10 +385,6 @@ class Annotation(object):
 
         self._cx = cx
         self._cy = cy
-        print(c)
-        print(r)
-        print(cx,cy)
-        print('just_boundary ',just_boundary)
 
         self.n_scans = 1
         if not just_boundary:
@@ -412,9 +408,7 @@ class Annotation(object):
 
         del self._border_mask
 
-        print('got mask in %e seconds -- %e (n_scans %d; border %d; tot %d)' %
-        (time.time()-t0, mask.sum(), self.n_scans, len(self._border_y_pixels),
-         mask.sum()))
+        print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
 
     def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
