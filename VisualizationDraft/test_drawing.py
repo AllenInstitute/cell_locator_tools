@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from spline_utils import Spline2D, Annotation
+from spline_utils import Spline2D, SplineAnnotation
 
 import numpy as np
 
