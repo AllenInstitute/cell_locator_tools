@@ -290,8 +290,9 @@ class BrainSlice(object):
         markup_slice_coords = self.coord_converter.c_to_slice(markup_pts)
         markup_slice_pixels = self.slice_to_pixel(markup_slice_coords[:2,:])
 
-        annotation = spline_utils.Annotation(markup_slice_coords[0,:], markup_slice_coords[1,:],
-                                             pixel_transformer=self._slice_to_pixel_transformer)
+        annotation = spline_utils.SplineAnnotation(markup_slice_coords[0,:],
+                                                   markup_slice_coords[1,:],
+                                                   pixel_transformer=self._slice_to_pixel_transformer)
         return annotation
 
 

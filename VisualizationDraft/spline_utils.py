@@ -86,7 +86,7 @@ class Spline2D(object):
         return mat, boundary_conditions
 
 
-class Annotation(object):
+class AnnotationBase(object):
 
     @property
     def x_min(self):
@@ -117,7 +117,8 @@ class Annotation(object):
         return self.coord_transform._x_resolution
 
     def __init__(self, x_vals, y_vals, pixel_transformer=None):
-        self._spline = Spline2D(x_vals, y_vals)
+        self._x_vals = np.copy(x_vals)
+        self._y_vals = np.copy(y_vals)
         self._clean_border()
         self.coord_transform = pixel_transformer
 
@@ -145,96 +146,6 @@ class Annotation(object):
         self._by_x_lookup = None
         self._by_y_lookup = None
         self._border_interpolator = None
-
-    def _build_boundary(self, resolution, threshold_factor):
-        self._clean_border()
-
-        border_x = []
-        border_y = []
-        n_segments = len(self._spline.x)
-        self._border_interpolator = []
-        for i1 in range(n_segments):
-            if i1<n_segments-1:
-                i2 = i1+1
-            else:
-                i2 = 0
-            d_max = 10.0*resolution
-
-            # sample each curve at a fine enough resolution
-            # that we will get all of the border pixels
-            tt = np.arange(0.0, 1.01, 0.1)
-            d_threshold = threshold_factor*resolution
-            while d_max>d_threshold:
-                xx, yy = self._spline.values(i1, tt)
-                dx = np.abs(xx[:-1]-xx[1:])
-                dy = np.abs(yy[:-1]-yy[1:])
-                dist = np.where(dx>dy,dx,dy)
-                d_max = dist.max()
-                if d_max>d_threshold:
-                   bad_dex = np.where(dist>d_threshold)[0]
-                   new_t = tt[bad_dex]+0.5*(tt[bad_dex+1]-tt[bad_dex])
-                   tt = np.sort(np.concatenate([tt, new_t]))
-            self._border_interpolator.append({'t':tt,
-                                              'x':xx,
-                                              'y':yy})
-            border_x.append(xx)
-            border_y.append(yy)
-        border_x = np.concatenate(border_x)
-        border_y = np.concatenate(border_y)
-
-        just_made_coord_transform = False
-        if self.coord_transform is None:
-            just_made_coord_transform = True
-            x0 = border_x.min()
-            y0 = border_y.min()
-            self.coord_transform = coords.PixelTransformer(np.array([x0, y0]),
-                                                           np.identity(2,dtype=float),
-                                                           resolution, resolution)
-
-        self._border_x = border_x
-        self._border_y = border_y
-
-        # convert to integer pixel values
-        pixel_coords = self.wc_to_pixels(np.array([border_x, border_y]))
-        self._border_x_pixels = pixel_coords[0,:]
-        self._border_y_pixels = pixel_coords[1,:]
-
-        if just_made_coord_transform:
-            self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
-            self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
-        else:
-            self._n_x_pixels = self.border_x_pixels.max()+1
-            self._n_y_pixels = self.border_y_pixels.max()+1
-
-
-        # cull pixels that are identical to their neighbor
-        n_border = len(self._border_x_pixels)
-        d_pixel = np.ones(n_border)  # so that we keep the [-1] pixel
-        d_pixel[:-1] = np.sqrt((self._border_x_pixels[:-1]-self._border_x_pixels[1:])**2 +
-                          (self._border_y_pixels[:-1]-self._border_y_pixels[1:])**2)
-
-        print('n_boundary %d' % (len(self._border_x_pixels)))
-        valid = np.where(d_pixel>1.0e-6)
-        self._border_x_pixels = self._border_x_pixels[valid]
-        self._border_y_pixels = self._border_y_pixels[valid]
-
-        print('n_boundary corrected %d' % (len(self._border_x_pixels)))
-
-        sorted_dex = np.argsort(self._border_x_pixels)
-        self._border_x_pixels_by_x = self._border_x_pixels[sorted_dex]
-        self._border_y_pixels_by_x = self._border_y_pixels[sorted_dex]
-        self._by_x_lookup = {}
-        for ix in np.unique(self._border_x_pixels_by_x):
-            valid = np.where(self._border_x_pixels_by_x==ix)
-            self._by_x_lookup[ix] = (valid[0].min(), valid[0].max()+1)
-
-        sorted_dex = np.argsort(self._border_y_pixels)
-        self._border_x_pixels_by_y = self._border_x_pixels[sorted_dex]
-        self._border_y_pixels_by_y = self._border_y_pixels[sorted_dex]
-        self._by_y_lookup = {}
-        for iy in np.unique(self._border_y_pixels_by_y):
-            valid = np.where(self._border_y_pixels_by_y==iy)
-            self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
 
     def _get_cross(self, ix, iy, mask):
 
@@ -433,6 +344,101 @@ class Annotation(object):
             self._mask = self._generate_mask(resolution, just_boundary=just_boundary,
                                              threshold_factor=threshold_factor)
         return self._mask
+
+
+class SplineAnnotation(AnnotationBase):
+
+    def _build_boundary(self, resolution, threshold_factor):
+        self._spline = Spline2D(self._x_vals, self._y_vals)
+        self._clean_border()
+
+        border_x = []
+        border_y = []
+        n_segments = len(self._spline.x)
+        self._border_interpolator = []
+        for i1 in range(n_segments):
+            if i1<n_segments-1:
+                i2 = i1+1
+            else:
+                i2 = 0
+            d_max = 10.0*resolution
+
+            # sample each curve at a fine enough resolution
+            # that we will get all of the border pixels
+            tt = np.arange(0.0, 1.01, 0.1)
+            d_threshold = threshold_factor*resolution
+            while d_max>d_threshold:
+                xx, yy = self._spline.values(i1, tt)
+                dx = np.abs(xx[:-1]-xx[1:])
+                dy = np.abs(yy[:-1]-yy[1:])
+                dist = np.where(dx>dy,dx,dy)
+                d_max = dist.max()
+                if d_max>d_threshold:
+                   bad_dex = np.where(dist>d_threshold)[0]
+                   new_t = tt[bad_dex]+0.5*(tt[bad_dex+1]-tt[bad_dex])
+                   tt = np.sort(np.concatenate([tt, new_t]))
+            self._border_interpolator.append({'t':tt,
+                                              'x':xx,
+                                              'y':yy})
+            border_x.append(xx)
+            border_y.append(yy)
+        border_x = np.concatenate(border_x)
+        border_y = np.concatenate(border_y)
+
+        just_made_coord_transform = False
+        if self.coord_transform is None:
+            just_made_coord_transform = True
+            x0 = border_x.min()
+            y0 = border_y.min()
+            self.coord_transform = coords.PixelTransformer(np.array([x0, y0]),
+                                                           np.identity(2,dtype=float),
+                                                           resolution, resolution)
+
+        self._border_x = border_x
+        self._border_y = border_y
+
+        # convert to integer pixel values
+        pixel_coords = self.wc_to_pixels(np.array([border_x, border_y]))
+        self._border_x_pixels = pixel_coords[0,:]
+        self._border_y_pixels = pixel_coords[1,:]
+
+        if just_made_coord_transform:
+            self._n_x_pixels = self.border_x_pixels.max()-self.border_x_pixels.min()+1
+            self._n_y_pixels = self.border_y_pixels.max()-self.border_y_pixels.min()+1
+        else:
+            self._n_x_pixels = self.border_x_pixels.max()+1
+            self._n_y_pixels = self.border_y_pixels.max()+1
+
+
+        # cull pixels that are identical to their neighbor
+        n_border = len(self._border_x_pixels)
+        d_pixel = np.ones(n_border)  # so that we keep the [-1] pixel
+        d_pixel[:-1] = np.sqrt((self._border_x_pixels[:-1]-self._border_x_pixels[1:])**2 +
+                          (self._border_y_pixels[:-1]-self._border_y_pixels[1:])**2)
+
+        print('n_boundary %d' % (len(self._border_x_pixels)))
+        valid = np.where(d_pixel>1.0e-6)
+        self._border_x_pixels = self._border_x_pixels[valid]
+        self._border_y_pixels = self._border_y_pixels[valid]
+
+        print('n_boundary corrected %d' % (len(self._border_x_pixels)))
+
+        sorted_dex = np.argsort(self._border_x_pixels)
+        self._border_x_pixels_by_x = self._border_x_pixels[sorted_dex]
+        self._border_y_pixels_by_x = self._border_y_pixels[sorted_dex]
+        self._by_x_lookup = {}
+        for ix in np.unique(self._border_x_pixels_by_x):
+            valid = np.where(self._border_x_pixels_by_x==ix)
+            self._by_x_lookup[ix] = (valid[0].min(), valid[0].max()+1)
+
+        sorted_dex = np.argsort(self._border_y_pixels)
+        self._border_x_pixels_by_y = self._border_x_pixels[sorted_dex]
+        self._border_y_pixels_by_y = self._border_y_pixels[sorted_dex]
+        self._by_y_lookup = {}
+        for iy in np.unique(self._border_y_pixels_by_y):
+            valid = np.where(self._border_y_pixels_by_y==iy)
+            self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
+
 
 
 if __name__ == "__main__":
