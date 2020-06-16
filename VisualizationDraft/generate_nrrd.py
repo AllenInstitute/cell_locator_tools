@@ -43,6 +43,7 @@ if __name__ == "__main__":
     
     output_voxels = output_voxels.reshape(img_shape)
     output_img = SimpleITK.GetImageFromArray(output_voxels)
+    output_img.SetSpacing((resolution, resolution, resolution))
     writer = SimpleITK.ImageFileWriter()
     writer.SetFileName('test_mask.nrrd')
     writer.Execute(output_img)
