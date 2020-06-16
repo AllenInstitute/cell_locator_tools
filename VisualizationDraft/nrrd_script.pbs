@@ -15,7 +15,7 @@ cd ${vis_dir}
 declare -i ii
 ii=100*${PBS_ARRAYID}
 
-python generate_nnrd.py \
+python generate_nrrd.py \
 --template average_template_10.nrrd \
 --in_dir /allen/aibs/technology/danielsf/nick_dee_json_files/ \
 --out_dir annotation_nrrd_nick_dee/ \
