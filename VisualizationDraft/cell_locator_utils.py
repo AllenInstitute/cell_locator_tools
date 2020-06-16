@@ -505,8 +505,15 @@ class BrainVolume(object):
 
         return BrainSliceImage(brain_slice, new_img)
 
-    def get_voxel_mask(self, brain_slice, markup, spline=True):
+    def get_voxel_mask(self, brain_slice, markup):
         t0 = time.time()
+        markup_type = markup['RepresentationType'].lower()
+        if markup_type == 'spline':
+            spline = True
+        elif markup_type == 'polyline':
+            spline = False
+        else:
+            raise RuntimeError("Cannot intepret markup_type: %s" % markup_type)
         annotation = brain_slice.annotation_from_markup(markup, spline=spline)
         raw_mask = annotation.get_mask(self.resolution)
         max_x = brain_slice.pixel_x.max()+1
