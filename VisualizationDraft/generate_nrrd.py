@@ -25,7 +25,6 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
         valid_voxels = brain_vol.get_voxel_mask(brain_slice, markup)
 
         output_voxels[valid_voxels] = label
-        label += 1
 
         output_voxels = output_voxels.reshape(img_shape)
         output_img = SimpleITK.GetImageFromArray(output_voxels)
