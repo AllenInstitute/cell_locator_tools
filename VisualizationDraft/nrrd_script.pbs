@@ -1,0 +1,24 @@
+#!/bin/bash
+
+vis_dir=/home/scott.daniel/CellLocatorPrototype/VisualizationDraft/
+
+#PBS -n
+#PBS -l walltime=4:00:00
+#PBS -l nodes=1:ppn=3
+#PBS -l mem=120gb
+#PBS -o ${vis_dir}nrrd_${PBS_JOBID}_stdout.txt
+#PBS -e ${vis_dir}nrrd_${PBS_JOBID}_stderr.txt
+#PBS -q celltypes
+#PBS -t 0-29
+
+cd ${vis_dir}
+declare -i ii
+ii=100*${PBS_ARRAYID}
+
+python generate_nnrd.py \
+--template average_template_10.nrrd \
+--in_dir /allen/aibs/technology/danielsf/nick_dee_json_files/ \
+--out_dir annotation_nrrd_nick_dee/ \
+--n_threads 3 \
+--istart ${ii} \
+--lim 100
