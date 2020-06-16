@@ -354,7 +354,7 @@ class BrainSliceImage(object):
 
 class BrainVolume(object):
 
-    def __init__(self, img_data, resolution):
+    def __init__(self, img_data, resolution, keep_img_data=True):
         """
         img_data is a 3D numpy array with the pixel data from the Brain Atlas
         resolution is the pixel resolution value for img_data
@@ -363,7 +363,8 @@ class BrainVolume(object):
         self.nx0 = img_data.shape[2]
         self.ny0 = img_data.shape[1]
         self.nz0 = img_data.shape[0]
-        self.img_data = img_data.flatten() #.astype(float)
+        if keep_img_data:
+            self.img_data = img_data.flatten() #.astype(float)
 
         self.brain_volume = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
 
