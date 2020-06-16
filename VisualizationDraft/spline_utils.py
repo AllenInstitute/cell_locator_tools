@@ -254,7 +254,6 @@ class AnnotationBase(object):
     def _generate_mask(self, resolution,
                        just_boundary=False,
                        threshold_factor=0.25):
-        print('generating mask')
 
         t0 = time.time()
         self._build_boundary(resolution, threshold_factor)
@@ -319,11 +318,9 @@ class AnnotationBase(object):
 
         del self._border_mask
 
-        print('got mask in %e seconds -- %e (n_scans %d)' % (time.time()-t0, mask.sum(), self.n_scans))
         return mask
 
     def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
-        print('getting mask')
         must_generate = False
         if not hasattr(self, '_mask_params'):
             must_generate = True
@@ -382,12 +379,9 @@ class AnnotationBase(object):
         d_pixel[:-1] = np.sqrt((self._border_x_pixels[:-1]-self._border_x_pixels[1:])**2 +
                           (self._border_y_pixels[:-1]-self._border_y_pixels[1:])**2)
 
-        print('n_boundary %d' % (len(self._border_x_pixels)))
         valid = np.where(d_pixel>1.0e-6)
         self._border_x_pixels = self._border_x_pixels[valid]
         self._border_y_pixels = self._border_y_pixels[valid]
-
-        print('n_boundary corrected %d' % (len(self._border_x_pixels)))
 
         sorted_dex = np.argsort(self._border_x_pixels)
         self._border_x_pixels_by_x = self._border_x_pixels[sorted_dex]

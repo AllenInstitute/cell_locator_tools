@@ -272,8 +272,6 @@ class BrainSlice(object):
         pixel_coords = self.slice_to_pixel(slice_coords[:2,:])
         self._pixel_x = pixel_coords[0,:]
         self._pixel_y = pixel_coords[1,:]
-        print('BrainSlice init took %e' % (time.time()-t0))
-
 
     def allen_to_pixel(self, allen_coords, valid_mask=None):
         """
@@ -471,8 +469,6 @@ class BrainVolume(object):
             annotation = json.load(in_file)
             if thickness is None:
                 thickness = annotation['Markups'][0]['Thickness']
-                #thickness = 25.0
-                print('thickness is %e' % thickness)
         if from_pts:
             annotation = annotation['Markups'][0]
 
@@ -506,7 +502,6 @@ class BrainVolume(object):
         return BrainSliceImage(brain_slice, new_img)
 
     def get_voxel_mask(self, brain_slice, markup):
-        t0 = time.time()
         markup_type = markup['RepresentationType'].lower()
         if markup_type == 'spline':
             spline = True
@@ -526,5 +521,4 @@ class BrainVolume(object):
         test_pixel_indices += brain_slice.pixel_y
         valid_voxels = np.zeros(self.brain_volume.shape[1], dtype=bool)
         valid_voxels[brain_slice.valid_mask] = pixel_mask[test_pixel_indices]
-        print('actual valid voxel method took %e' % (time.time()-t0))
         return valid_voxels
