@@ -111,7 +111,6 @@ class CellLocatorTransformation(object):
         slice_to_c = np.zeros((4,4), dtype=float)
         slice_to_c[:3, :3] = z_to_norm
         slice_to_c[3,3] = 1.0
-        rotation_dot_origin = np.dot(z_to_norm, slice_plane.origin)
         for ii in range(3):
             slice_to_c[ii, 3] += slice_plane.origin[ii]
 
