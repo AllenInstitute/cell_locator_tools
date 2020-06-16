@@ -46,7 +46,7 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
         out_name = fname.replace('.json', '.nrrd')
         writer.SetFileName(os.path.join(out_dir, out_name))
         writer.Execute(output_img)
-        if i_file>0 and i_file%10 == 0:
+        if i_file>0 and i_file%4 == 0:
             duration = (time.time()-t0)/3600.0
             per = duration/i_file
             pred = per*len(annotation_fname_list)
@@ -80,8 +80,6 @@ if __name__ == "__main__":
     annotation_dir = args.in_dir
     annotation_fname_list = os.listdir(annotation_dir)
     annotation_fname_list.sort()
-
-    annotation_fname_list = annotation_fname_list[:5]
 
     p_list = []
     per_thread = len(annotation_fname_list)//args.n_threads
