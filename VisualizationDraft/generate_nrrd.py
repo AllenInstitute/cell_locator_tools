@@ -33,7 +33,7 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
 
         brain_slice = brain_vol.brain_slice_from_annotation(annotation_name)
 
-        output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
+        output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint8)
 
         valid_voxels = brain_vol.get_voxel_mask(brain_slice, markup)
 
@@ -45,6 +45,7 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
         writer = SimpleITK.ImageFileWriter()
         out_name = fname.replace('.json', '.nrrd')
         writer.SetFileName(os.path.join(out_dir, out_name))
+        writer.SetUseCompression(True)
         writer.Execute(output_img)
         if i_file>0 and i_file%4 == 0:
             duration = (time.time()-t0)/3600.0
