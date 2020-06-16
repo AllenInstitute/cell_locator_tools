@@ -6,25 +6,10 @@ import cell_locator_utils
 import copy
 import time
 
-if __name__ == "__main__":
-
-    resolution  = 10
-    img_name = 'average_template_10.nrrd'
-    img = SimpleITK.ReadImage(img_name)
-    img_data = SimpleITK.GetArrayFromImage(img)
-    img_shape = copy.deepcopy(img_data.shape)
-    brain_vol = cell_locator_utils.BrainVolume(img_data, resolution, keep_img_data=False)
-
-    del img_data
-    del img
-
+def write_annotation(annotation_fname_list, annotation_dir, brain_vol):
     output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
-
-    annotation_dir = '../marga_json_files'
-    annotation_fname_list = os.listdir(annotation_dir)
-    annotation_fname_list.sort()
     label = 1
-    for fname in annotation_fname_list[:5]:
+    for fname in annotation_fname_list:
         if not fname.endswith('json'):
             continue
         t0 = time.time()
@@ -47,4 +32,24 @@ if __name__ == "__main__":
     writer = SimpleITK.ImageFileWriter()
     writer.SetFileName('test_mask.nrrd')
     writer.Execute(output_img)
+
+
+if __name__ == "__main__":
+
+    resolution  = 10
+    img_name = 'average_template_10.nrrd'
+    img = SimpleITK.ReadImage(img_name)
+    img_data = SimpleITK.GetArrayFromImage(img)
+    img_shape = copy.deepcopy(img_data.shape)
+    brain_vol = cell_locator_utils.BrainVolume(img_data, resolution, keep_img_data=False)
+
+    del img_data
+    del img
+
+    annotation_dir = '../marga_json_files'
+    annotation_fname_list = os.listdir(annotation_dir)
+    annotation_fname_list.sort()
+
+    write_annotation(annotation_fname_list[:5], annotation_dir, brain_vol)
+
     print('done')
