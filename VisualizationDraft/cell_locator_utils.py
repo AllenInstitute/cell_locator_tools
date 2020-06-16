@@ -464,8 +464,7 @@ class BrainVolume(object):
 
         return img_dex_flat, new_img_dex_flat, brain_slice.n_cols, brain_slice.n_rows
 
-
-    def slice_img_from_annotation(self, annotation_fname, from_pts=False, thickness=None):
+    def brain_slice_from_annotation(self, annotation_fname, from_pts=False, thickness=None):
 
         with open(annotation_fname, 'rb') as in_file:
             annotation = json.load(in_file)
@@ -479,6 +478,12 @@ class BrainVolume(object):
 
         coord_converter = CellLocatorTransformation(annotation, from_pts=from_pts)
         brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume, thickness)
+        return brain_slice
+
+    def slice_img_from_annotation(self, annotation_fname, from_pts=False, thickness=None):
+        brain_slice = self.brain_slice_from_annotation(annotation_fname,
+                                                       from_pts=from_pts,
+                                                       thickness=thickness)
         return self.slice_img_from_BrainSlice(brain_slice)
 
     def slice_img_from_BrainSlice(self, brain_slice):
