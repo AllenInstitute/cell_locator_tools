@@ -5,6 +5,7 @@ import json
 import cell_locator_utils
 import copy
 import time
+import multiprocessing
 
 import argparse
 
@@ -47,6 +48,7 @@ if __name__ == "__main__":
     parser.add_argument('--template', type=str, default='average_template_10.nrrd')
     parser.add_argument('--in_dir', type=str, default=None)
     parser.add_argument('--out_dir', type=str, default=None)
+    parser.add_argument('--n_threads', type=int, default=2)
     args = parser.parse_args()
 
     assert os.path.isfile(args.template)
@@ -67,6 +69,18 @@ if __name__ == "__main__":
     annotation_fname_list = os.listdir(annotation_dir)
     annotation_fname_list.sort()
 
-    write_annotation(annotation_fname_list[:5], annotation_dir, brain_vol, args.out_dir)
+    annotation_fname_list = annotation_fname_list[:5]
+
+    p_list = []
+    per_thread = len(annotation_fname_list)//args.n_threads
+
+    for i0 in range(0, len(annotation_fname_list), per_thread):
+        sub_list = annotation_fname_list[i0:i0+per_thread]
+        p = multiprocessing.Process(target=write_annotation,
+                                    args=(sub_list, annotation_dir, brain_vol, args.out_dir))
+        p.start()
+        p_list.append(p)
+    for p in p_list:
+        p.join()
 
     print('done')
