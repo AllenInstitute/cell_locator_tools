@@ -71,6 +71,13 @@ if __name__ == "__main__":
     assert os.path.isdir(args.in_dir)
     assert os.path.isdir(args.out_dir)
 
+    annotation_dir = args.in_dir
+    annotation_fname_list = os.listdir(annotation_dir)
+    annotation_fname_list.sort()
+
+    if args.lim is not None:
+        annotation_fname_list = annotation_fname_list[:args.lim]
+
     resolution  = 10
     img_name = args.template
     img = SimpleITK.ReadImage(img_name)
@@ -80,13 +87,6 @@ if __name__ == "__main__":
 
     del img_data
     del img
-
-    annotation_dir = args.in_dir
-    annotation_fname_list = os.listdir(annotation_dir)
-    annotation_fname_list.sort()
-
-    if args.lim is not None:
-        annotation_fname_list = annotation_fname_list[:args.lim]
 
     p_list = []
     per_thread = len(annotation_fname_list)//args.n_threads
