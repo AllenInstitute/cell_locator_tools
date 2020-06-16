@@ -18,6 +18,9 @@ class CellLocatorTransformation(object):
 
     @property
     def origin(self):
+        """
+        in Cell Locator coordinates
+        """
         return self._origin
 
     def __init__(self, annotation, from_pts=False):
