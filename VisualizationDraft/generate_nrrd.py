@@ -6,13 +6,13 @@ import cell_locator_utils
 import copy
 import time
 
-def write_annotation(annotation_fname_list, annotation_dir, brain_vol):
-    output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
+def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
     label = 1
     for fname in annotation_fname_list:
         if not fname.endswith('json'):
             continue
         t0 = time.time()
+        output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
         annotation_name = os.path.join(annotation_dir, fname)
 
         brain_slice = brain_vol.brain_slice_from_annotation(annotation_name)
@@ -24,14 +24,15 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol):
 
         output_voxels[valid_voxels] = label
         label += 1
-        print('ran on %s -- %e' % (fname, time.time()-t0))
     
-    output_voxels = output_voxels.reshape(img_shape)
-    output_img = SimpleITK.GetImageFromArray(output_voxels)
-    output_img.SetSpacing((resolution, resolution, resolution))
-    writer = SimpleITK.ImageFileWriter()
-    writer.SetFileName('test_mask.nrrd')
-    writer.Execute(output_img)
+        output_voxels = output_voxels.reshape(img_shape)
+        output_img = SimpleITK.GetImageFromArray(output_voxels)
+        output_img.SetSpacing((resolution, resolution, resolution))
+        writer = SimpleITK.ImageFileWriter()
+        out_name = fname.replace('.json', '.nrrd')
+        writer.SetFileName(os.path.join(out_dir, out_name))
+        writer.Execute(output_img)
+        print('ran on %s -- %e' % (fname, time.time()-t0))
 
 
 if __name__ == "__main__":
@@ -50,6 +51,6 @@ if __name__ == "__main__":
     annotation_fname_list = os.listdir(annotation_dir)
     annotation_fname_list.sort()
 
-    write_annotation(annotation_fname_list[:5], annotation_dir, brain_vol)
+    write_annotation(annotation_fname_list[:5], annotation_dir, brain_vol, 'mask_dir')
 
     print('done')
