@@ -24,7 +24,7 @@ if __name__ == "__main__":
     annotation_fname_list = os.listdir(annotation_dir)
     annotation_fname_list.sort()
     label = 1
-    for fname in annotation_fname_list[:10]:
+    for fname in annotation_fname_list[:5]:
         if not fname.endswith('json'):
             continue
         t0 = time.time()
