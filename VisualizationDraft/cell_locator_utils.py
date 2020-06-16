@@ -363,7 +363,7 @@ class BrainVolume(object):
         self.nx0 = img_data.shape[2]
         self.ny0 = img_data.shape[1]
         self.nz0 = img_data.shape[0]
-        self.img_data = img_data.flatten().astype(float)
+        self.img_data = img_data.flatten() #.astype(float)
 
         self.brain_volume = np.zeros((3,self.nx0*self.ny0*self.nz0), dtype=float)
 
