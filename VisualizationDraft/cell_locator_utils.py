@@ -150,13 +150,12 @@ class CellLocatorTransformation(object):
         pts_4d = np.dot(self._slice_to_a, pts_4d)
         return pts_4d[:3,:]
 
-    def get_slice_mask_from_allen(self, pts, resolution):
+    def z_from_allen(self, pts, resolution):
         """
         pts is a numpy array wth shape (3, N) where N is the number of points;
         it contains the x,y,z coordinate values of the allen pixels
         """
-        z_value = np.dot(self._a_to_slice[2,:3], pts)+self._a_to_slice[2,3]
-        return np.abs(z_value)<0.5*np.sqrt(3.0)*resolution
+        return np.dot(self._a_to_slice[2,:3], pts)+self._a_to_slice[2,3]
 
 
 class BrainSlice(object):
@@ -217,6 +216,11 @@ class BrainSlice(object):
     def pixel_y(self):
         return self._pixel_y
 
+    def get_slice_mask_from_allen(self, brain_volume, resolution):
+        z_value = self.coord_converter.z_from_allen(brain_volume, resolution)
+        return np.abs(z_value)<0.5*np.sqrt(3.0)*resolution
+
+
     def __init__(self, coord_converter, resolution, brain_volume):
         """
         brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
@@ -226,8 +230,8 @@ class BrainSlice(object):
         self._resolution = resolution
 
         # find all of the voxels that are actually in the slice
-        self._valid_mask = self.coord_converter.get_slice_mask_from_allen(brain_volume,
-                                                                          self.resolution)
+        self._valid_mask = self.get_slice_mask_from_allen(brain_volume,
+                                                          self.resolution)
 
         # find the coordinates of all of the voxels in the slice frame
         slice_coords = coord_converter.allen_to_slice(brain_volume[:,self.valid_mask])
@@ -264,8 +268,8 @@ class BrainSlice(object):
         Convert a 3xN array of allen coordinates into pixel coordinates on the slice
         """
         if valid_mask is None:
-            valid_mask = self.coord_converter.get_slice_mask_from_allen(allen_coords,
-                                                                        self.resolution)
+            valid_mask = self.get_slice_mask_from_allen(allen_coords,
+                                                        self.resolution)
 
         pixel_coords = -999*np.ones((2,allen_coords.shape[1]), dtype=int)
         slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_mask])
