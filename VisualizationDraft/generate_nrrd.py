@@ -65,6 +65,7 @@ if __name__ == "__main__":
     parser.add_argument('--out_dir', type=str, default=None)
     parser.add_argument('--n_threads', type=int, default=2)
     parser.add_argument('--lim', type=int, default=None)
+    parser.add_argument('--istart', type=int, default=None)
     args = parser.parse_args()
 
     assert os.path.isfile(args.template)
@@ -74,6 +75,9 @@ if __name__ == "__main__":
     annotation_dir = args.in_dir
     annotation_fname_list = os.listdir(annotation_dir)
     annotation_fname_list.sort()
+
+    if args.istart is not None:
+        annotation_fname_list = annotation_fname_list[args.istart:]
 
     if args.lim is not None:
         annotation_fname_list = annotation_fname_list[:args.lim]
