@@ -10,10 +10,10 @@ import argparse
 
 def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
     label = 1
-    for fname in annotation_fname_list:
+    t0 = time.time()
+    for i_file, fname in enumerate(annotation_fname_list):
         if not fname.endswith('json'):
             continue
-        t0 = time.time()
         output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
         annotation_name = os.path.join(annotation_dir, fname)
 
@@ -33,7 +33,12 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
         out_name = fname.replace('.json', '.nrrd')
         writer.SetFileName(os.path.join(out_dir, out_name))
         writer.Execute(output_img)
-        print('ran on %s -- %e' % (fname, time.time()-t0))
+        if i_file>0 and i_file%10 == 0:
+            duration = (time.time()-t0)/3600.0
+            per = duration/i_file
+            pred = per*len(annotation_fname_list)
+            print('ran on %d in %.2d hrs; expect %.2e hrs' %
+            (i_file, duration, pred))
 
 
 if __name__ == "__main__":
