@@ -23,9 +23,11 @@ class CellLocatorTransformation(object):
         """
         return self._origin
 
-    def __init__(self, annotation, from_pts=False):
+    def __init__(self, annotation, from_pts=False, forced_origin=None):
         """
         annotation is a dict containing the annotation
+
+        force_origin is in CellLocator coordinates
         """
         # matrices to handle the fact that, in CellLocator:
         # +x = right
@@ -48,6 +50,9 @@ class CellLocatorTransformation(object):
             self._slice_to_c = self.slice_to_c_from_points(annotation)
         else:
             self._slice_to_c = self.slice_to_c_from_orientation(annotation)
+
+        if forced_origin is not None:
+            self._slice_to_c[:3,3] = forced_origin
 
         # in 3-D cell-locator coordinates
         self._origin = np.array([self._slice_to_c[0,3],
