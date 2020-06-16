@@ -6,6 +6,8 @@ import cell_locator_utils
 import copy
 import time
 
+import argparse
+
 def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
     label = 1
     for fname in annotation_fname_list:
@@ -24,7 +26,7 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
 
         output_voxels[valid_voxels] = label
         label += 1
-    
+
         output_voxels = output_voxels.reshape(img_shape)
         output_img = SimpleITK.GetImageFromArray(output_voxels)
         output_img.SetSpacing((resolution, resolution, resolution))
@@ -37,8 +39,18 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--template', type=str, default='average_template_10.nrrd')
+    parser.add_argument('--in_dir', type=str, default=None)
+    parser.add_argument('--out_dir', type=str, default=None)
+    args = parser.parse_args()
+
+    assert os.path.isfile(args.template)
+    assert os.path.isdir(args.in_dir)
+    assert os.path.isdir(args.out_dir)
+
     resolution  = 10
-    img_name = 'average_template_10.nrrd'
+    img_name = args.template
     img = SimpleITK.ReadImage(img_name)
     img_data = SimpleITK.GetArrayFromImage(img)
     img_shape = copy.deepcopy(img_data.shape)
@@ -47,10 +59,10 @@ if __name__ == "__main__":
     del img_data
     del img
 
-    annotation_dir = '../marga_json_files'
+    annotation_dir = args.in_dir
     annotation_fname_list = os.listdir(annotation_dir)
     annotation_fname_list.sort()
 
-    write_annotation(annotation_fname_list[:5], annotation_dir, brain_vol, 'mask_dir')
+    write_annotation(annotation_fname_list[:5], annotation_dir, brain_vol, args.out_dir)
 
     print('done')
