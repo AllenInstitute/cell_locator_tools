@@ -53,7 +53,7 @@ def write_annotation(annotation_fname_list, annotation_dir,
             duration = (time.time()-t0)/3600.0
             per = duration/i_file
             pred = per*len(annotation_fname_list)
-            print('ran on %d in %.2d hrs; expect %.2e hrs' %
+            print('ran on %d in %.2e hrs; expect %.2e hrs' %
             (i_file, duration, pred))
 
 
