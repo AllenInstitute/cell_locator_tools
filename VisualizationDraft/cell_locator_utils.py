@@ -180,6 +180,10 @@ class BrainSlice(object):
         return self._resolution
 
     @property
+    def thickness(self):
+        return self._thickness
+
+    @property
     def x_min(self):
         return self._x_min
 
@@ -225,16 +229,18 @@ class BrainSlice(object):
 
     def get_slice_mask_from_allen(self, brain_volume):
         z_value = self.coord_converter.z_from_allen(brain_volume, self.resolution)
-        return np.abs(z_value)<0.5*np.sqrt(3.0)*self.resolution
+        upper_lim = 0.5*np.sqrt(3.0)*self.resolution
+        lower_lim = -1.0*self.thickness-upper_lim
+        return np.logical_and(z_value<=upper_lim, z_value>=lower_lim)
 
-
-    def __init__(self, coord_converter, resolution, brain_volume):
+    def __init__(self, coord_converter, resolution, brain_volume, thickness):
         """
         brain_volume is the 3xN numpy array of x,y,z coords of full brain voxels
         """
         t0 = time.time()
         self._coord_converter = coord_converter
         self._resolution = resolution
+        self._thickness = thickness
 
         # find all of the voxels that are actually in the slice
         self._valid_mask = self.get_slice_mask_from_allen(brain_volume)
@@ -459,16 +465,20 @@ class BrainVolume(object):
         return img_dex_flat, new_img_dex_flat, brain_slice.n_cols, brain_slice.n_rows
 
 
-    def slice_img_from_annotation(self, annotation_fname, from_pts=False):
+    def slice_img_from_annotation(self, annotation_fname, from_pts=False, thickness=None):
 
         with open(annotation_fname, 'rb') as in_file:
             annotation = json.load(in_file)
+            if thickness is None:
+                thickness = annotation['Markups'][0]['Thickness']
+                #thickness = 25.0
+                print('thickness is %e' % thickness)
         if from_pts:
             annotation = annotation['Markups'][0]
 
 
         coord_converter = CellLocatorTransformation(annotation, from_pts=from_pts)
-        brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume)
+        brain_slice = BrainSlice(coord_converter, self.resolution, self.brain_volume, thickness)
         return self.slice_img_from_BrainSlice(brain_slice)
 
     def slice_img_from_BrainSlice(self, brain_slice):
