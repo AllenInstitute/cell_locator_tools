@@ -216,9 +216,9 @@ class BrainSlice(object):
     def pixel_y(self):
         return self._pixel_y
 
-    def get_slice_mask_from_allen(self, brain_volume, resolution):
-        z_value = self.coord_converter.z_from_allen(brain_volume, resolution)
-        return np.abs(z_value)<0.5*np.sqrt(3.0)*resolution
+    def get_slice_mask_from_allen(self, brain_volume):
+        z_value = self.coord_converter.z_from_allen(brain_volume, self.resolution)
+        return np.abs(z_value)<0.5*np.sqrt(3.0)*self.resolution
 
 
     def __init__(self, coord_converter, resolution, brain_volume):
@@ -230,8 +230,7 @@ class BrainSlice(object):
         self._resolution = resolution
 
         # find all of the voxels that are actually in the slice
-        self._valid_mask = self.get_slice_mask_from_allen(brain_volume,
-                                                          self.resolution)
+        self._valid_mask = self.get_slice_mask_from_allen(brain_volume)
 
         # find the coordinates of all of the voxels in the slice frame
         slice_coords = coord_converter.allen_to_slice(brain_volume[:,self.valid_mask])
@@ -268,8 +267,7 @@ class BrainSlice(object):
         Convert a 3xN array of allen coordinates into pixel coordinates on the slice
         """
         if valid_mask is None:
-            valid_mask = self.get_slice_mask_from_allen(allen_coords,
-                                                        self.resolution)
+            valid_mask = self.get_slice_mask_from_allen(allen_coords)
 
         pixel_coords = -999*np.ones((2,allen_coords.shape[1]), dtype=int)
         slice_coords = self.coord_converter.allen_to_slice(allen_coords[:,valid_mask])
