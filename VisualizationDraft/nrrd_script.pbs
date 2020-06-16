@@ -9,11 +9,14 @@ vis_dir=/home/scott.daniel/CellLocatorPrototype/VisualizationDraft/
 #PBS -o ${vis_dir}nrrd_${PBS_JOBID}_stdout.txt
 #PBS -e ${vis_dir}nrrd_${PBS_JOBID}_stderr.txt
 #PBS -q celltypes
-#PBS -t 0-29
+#PBS -t 1-29
 
 cd ${vis_dir}
 declare -i ii
 ii=100*${PBS_ARRAYID}
+ii=ii-100
+
+echo ${ii}
 
 python generate_nrrd.py \
 --template average_template_10.nrrd \
