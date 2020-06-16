@@ -9,19 +9,31 @@ import multiprocessing
 
 import argparse
 
+def validate_markup(markup):
+    if markup is None:
+        return False
+    if len(markup['Points'])<3:
+        return False
+    return True
+
 def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
     label = 1
     t0 = time.time()
     for i_file, fname in enumerate(annotation_fname_list):
         if not fname.endswith('json'):
             continue
-        output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
         annotation_name = os.path.join(annotation_dir, fname)
 
-        brain_slice = brain_vol.brain_slice_from_annotation(annotation_name)
         with open(annotation_name, 'rb') as in_file:
             annotation_dict = json.load(in_file)
         markup = annotation_dict['Markups'][0]
+        is_valid= validate_markup(markup)
+        if not is_valid:
+            continue
+
+        brain_slice = brain_vol.brain_slice_from_annotation(annotation_name)
+
+        output_voxels = np.zeros(brain_vol.brain_volume.shape[1], dtype=np.uint16)
 
         valid_voxels = brain_vol.get_voxel_mask(brain_slice, markup)
 
