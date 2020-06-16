@@ -1,16 +1,15 @@
 #!/bin/bash
-
-vis_dir=/home/scott.daniel/CellLocatorPrototype/VisualizationDraft/
-
 #PBS -n
-#PBS -l walltime=4:00:00
+#PBS -l walltime=3:00:00
 #PBS -l nodes=1:ppn=3
 #PBS -l mem=120gb
-#PBS -o ${vis_dir}nrrd_${PBS_JOBID}_stdout.txt
-#PBS -e ${vis_dir}nrrd_${PBS_JOBID}_stderr.txt
+#PBS -o /home/scott.daniel/CellLocatorPrototype/VisualizationDraft/nrrd_${PBS_JOBID}_stdout.txt
+#PBS -e /home/scott.daniel/CellLocatorPrototype/VisualizationDraft/nrrd_${PBS_JOBID}_stderr.txt
 #PBS -q celltypes
 #PBS -t 1-29
 
+
+vis_dir=/home/scott.daniel/CellLocatorPrototype/VisualizationDraft/
 cd ${vis_dir}
 declare -i ii
 ii=100*${PBS_ARRAYID}
