@@ -29,6 +29,7 @@ def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
         markup = annotation_dict['Markups'][0]
         is_valid= validate_markup(markup)
         if not is_valid:
+            print('%s is not valid' % fname)
             continue
 
         brain_slice = brain_vol.brain_slice_from_annotation(annotation_name)
