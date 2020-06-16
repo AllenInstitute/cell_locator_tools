@@ -16,7 +16,8 @@ def validate_markup(markup):
         return False
     return True
 
-def write_annotation(annotation_fname_list, annotation_dir, brain_vol, out_dir):
+def write_annotation(annotation_fname_list, annotation_dir,
+                     brain_vol, out_dir, img_shape):
     label = 1
     t0 = time.time()
     for i_file, fname in enumerate(annotation_fname_list):
@@ -93,7 +94,9 @@ if __name__ == "__main__":
     for i0 in range(0, len(annotation_fname_list), per_thread):
         sub_list = annotation_fname_list[i0:i0+per_thread]
         p = multiprocessing.Process(target=write_annotation,
-                                    args=(sub_list, annotation_dir, brain_vol, args.out_dir))
+                                    args=(sub_list, annotation_dir,
+                                          brain_vol, args.out_dir,
+                                          img_shape))
         p.start()
         p_list.append(p)
     for p in p_list:
