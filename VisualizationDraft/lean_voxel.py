@@ -32,6 +32,8 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
         markup_pts[1,i_pt] = pt['y']
         markup_pts[2,i_pt] = pt['z']
 
+    sub_resolution = 0.25*resolution
+
     c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
                           markup_pts)
     plane = planar_geometry.Plane.plane_from_many_points(c_markup_pts.transpose())
@@ -41,12 +43,13 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
                           slice_coords[1,:].min()-10.0])
     slice_to_pixel = coords.PixelTransformer(wc_origin,
                                              np.identity(2, dtype=float),
-                                             resolution, resolution)
+                                             sub_resolution,
+                                             sub_resolution)
 
     annotation = ann_class(slice_coords[0,:], slice_coords[1,:],
                            pixel_transformer=slice_to_pixel)
 
-    mask2d = annotation.get_mask(resolution)
+    mask2d = annotation.get_mask(sub_resolution)
 
     pixel_mesh = np.meshgrid(np.arange(mask2d.shape[1], dtype=int),
                              np.arange(mask2d.shape[0], dtype=int))
@@ -60,7 +63,11 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     allen_coords = slice_transform.slice_to_allen(wc_coords)
     new_coords = np.zeros(allen_coords.shape, dtype=float)
     dz = resolution
-    for zz in np.arange(resolution, -1.0*thickness, -resolution):
+    fudge = 0.5*np.sqrt(3)*resolution
+    z_values = np.concatenate([np.arange(fudge, 0.0, -sub_resolution),
+                               np.arange(0.0,-1.0*thickness,-sub_resolution),
+                               np.arange(-thickness,-thickness-fudge,-sub_resolution)])
+    for zz in z_values:
         for ii in range(3):
             new_coords[ii,:] = allen_coords[ii,:] + zz*plane.normal[ii]
         allen_pix = np.round(new_coords/resolution).astype(int)
