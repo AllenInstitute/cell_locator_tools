@@ -11,11 +11,17 @@ import cell_locator_utils
 import copy
 import time
 
+from lean_voxel import lean_voxel_mask
+
 if __name__ == "__main__":
     resolution = 25
     img_name = 'atlasVolume.mhd'
     img = SimpleITK.ReadImage(img_name)
     img_data = SimpleITK.GetArrayFromImage(img)
+
+    nz = img_data.shape[0]
+    ny = img_data.shape[1]
+    nx = img_data.shape[2]
 
     brain_vol = cell_locator_utils.BrainVolume(img_data, resolution)
     dummy_brain_vol = copy.deepcopy(brain_vol)
@@ -32,7 +38,9 @@ if __name__ == "__main__":
         annotation_dict = json.load(in_file)
     markup = annotation_dict['Markups'][0]
 
-    valid_voxels = brain_vol.get_voxel_mask(slice_img.brain_slice, markup)
+    #valid_voxels = brain_vol.get_voxel_mask(slice_img.brain_slice, markup)
+    t0 = time.time()
+    valid_voxels = lean_voxel_mask(markup, nx, ny, nz, resolution)
     print('\n')
     print('got valid_voxels in %e seconds -- %d' % ((time.time()-t0), valid_voxels.sum()))
     print('shape ',valid_voxels.shape)
