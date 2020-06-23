@@ -98,6 +98,15 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
         markup_pts[1,i_pt] = pt['y']
         markup_pts[2,i_pt] = pt['z']
 
+    bdry = _get_bdry(nx, ny, nz)
+    edge_coords = slice_transform.allen_to_slice(vol_coords[:,bdry])
+    wc_origin = np.array([edge_coords[0,:].min(),
+                          edge_coords[1,:].min()])
+
+    annotation = _get_annotation(wc_origin, resolution,
+                                 slice_transform.c_to_slice(markup_pts),
+                                 ann_class)
+
     c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
                           markup_pts)
     plane = planar_geometry.Plane.plane_from_many_points(c_markup_pts.transpose())
@@ -110,13 +119,6 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
     in_plane = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
 
     slice_coords = slice_transform.allen_to_slice(vol_coords[:,in_plane])
-
-    wc_origin = np.array([slice_coords[0,:].min(),
-                          slice_coords[1,:].min()])
-
-    annotation = _get_annotation(wc_origin, resolution,
-                                 slice_transform.c_to_slice(markup_pts),
-                                 ann_class)
 
     pixel_coords = annotation.wc_to_pixels(slice_coords[:2,:])
 
