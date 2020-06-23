@@ -10,7 +10,11 @@ import spline_utils
 
 def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
-    output_mask = np.zeros(nx*ny*nz, dtype=bool)
+    mesh = np.meshgrid(np.arange(nz), np.arange(ny), np.arange(nx), indexing='ij')
+    vol_coords = np.zeros((3,nx*ny*nz), dtype=float)
+    vol_coords[0,:] = mesh.pop(2).flatten()*resolution
+    vol_coords[1,:] = mesh.pop(1).flatten()*resolution
+    vol_coords[2,:] = mesh.pop(0).flatten()*resolution
 
     if markup['RepresentationType'] == 'spline':
         ann_class = spline_utils.SplineAnnotation
@@ -32,57 +36,54 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
         markup_pts[1,i_pt] = pt['y']
         markup_pts[2,i_pt] = pt['z']
 
-    sub_resolution = 0.25*resolution
-
     c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
                           markup_pts)
     plane = planar_geometry.Plane.plane_from_many_points(c_markup_pts.transpose())
 
-    slice_coords = slice_transform.c_to_slice(markup_pts)
-    wc_origin = np.array([slice_coords[0,:].min()-10.0,
-                          slice_coords[1,:].min()-10.0])
+    z_plane = np.dot(slice_transform._a_to_slice[2,:3],
+                     vol_coords) + slice_transform._a_to_slice[2,3]
+
+    upper_lim = 0.5*np.sqrt(3.0)*resolution
+    lower_lim = -1.0*thickness-upper_lim
+    in_plane = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
+
+    print('vol_coords shape ',vol_coords.shape)
+    print('in_plane shape ',in_plane.shape)
+
+    slice_coords = slice_transform.allen_to_slice(vol_coords[:,in_plane])
+
+    wc_origin = np.array([slice_coords[0,:].min(),
+                          slice_coords[1,:].min()])
+
     slice_to_pixel = coords.PixelTransformer(wc_origin,
                                              np.identity(2, dtype=float),
-                                             sub_resolution,
-                                             sub_resolution)
+                                             resolution,
+                                             resolution)
 
-    annotation = ann_class(slice_coords[0,:], slice_coords[1,:],
+    ann_pts = slice_transform.c_to_slice(markup_pts)
+
+    annotation = ann_class(ann_pts[0,:], ann_pts[1,:],
                            pixel_transformer=slice_to_pixel)
 
-    mask2d = annotation.get_mask(sub_resolution)
+    mask2d = annotation.get_mask(resolution)
 
-    pixel_mesh = np.meshgrid(np.arange(mask2d.shape[1], dtype=int),
-                             np.arange(mask2d.shape[0], dtype=int))
+    pixel_coords = slice_to_pixel.wc_to_pixels(slice_coords[:2,:])
 
-    pixel_coords = np.array([pixel_mesh[0].flatten(),
-                             pixel_mesh[1].flatten()])
-    del pixel_mesh
+    raw_mask = annotation.get_mask(resolution)
 
-    mask2d = mask2d.flatten()
-    wc_coords = slice_to_pixel.pixels_to_wc(pixel_coords)
-    allen_coords = slice_transform.slice_to_allen(wc_coords)
-    new_coords = np.zeros(allen_coords.shape, dtype=float)
-    dz = resolution
-    fudge = 0.5*np.sqrt(3)*resolution
-    z_values = np.concatenate([np.arange(fudge, 0.0, -sub_resolution),
-                               np.arange(0.0,-1.0*thickness,-sub_resolution),
-                               np.arange(-thickness,-thickness-fudge,-sub_resolution)])
-    for zz in z_values:
-        for ii in range(3):
-            new_coords[ii,:] = allen_coords[ii,:] + zz*plane.normal[ii]
-        allen_pix = np.round(new_coords/resolution).astype(int)
-        valid = np.logical_and(allen_pix[0,:]>=0,
-                np.logical_and(allen_pix[0,:]<nx,
-                np.logical_and(allen_pix[1,:]>=0,
-                np.logical_and(allen_pix[1,:]<ny,
-                np.logical_and(allen_pix[2,:]>=0,
-                               allen_pix[2,:]<nz)))))
-        allen_pix = allen_pix[:,valid]
-        mask_values = mask2d[valid]
-        allen_dex = allen_pix[2,:]*nx*ny+allen_pix[1,:]*nx+allen_pix[0,:]
-        output_mask[allen_dex] = mask_values
+    max_x = pixel_coords[0,:].max()+1
+    max_y = pixel_coords[1,:].max()+1
+    pixel_mask = np.zeros((max_x, max_y), dtype=bool)
+    raw_mask = raw_mask.transpose()
+    pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
+    pixel_mask = pixel_mask.flatten()
+    test_pixel_indices = pixel_coords[0,:]*max_y
+    test_pixel_indices += pixel_coords[1,:]
+    valid_voxels = np.zeros(nx*ny*nz, dtype=bool)
+    valid_voxels[in_plane] = pixel_mask[test_pixel_indices]
 
-    return output_mask #.reshape(nz, ny, nx)
+    return valid_voxels
+
 
 if __name__ == "__main__":
     pass
