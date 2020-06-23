@@ -69,7 +69,6 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     annotation = ann_class(ann_pts[0,:], ann_pts[1,:],
                            pixel_transformer=slice_to_pixel)
 
-    mask2d = annotation.get_mask(resolution)
 
     pixel_coords = slice_to_pixel.wc_to_pixels(slice_coords[:2,:])
 
