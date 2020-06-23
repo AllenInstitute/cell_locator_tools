@@ -109,7 +109,6 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
 
     c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
                           markup_pts)
-    plane = planar_geometry.Plane.plane_from_many_points(c_markup_pts.transpose())
 
     z_plane = np.dot(slice_transform._a_to_slice[2,:3],
                      vol_coords) + slice_transform._a_to_slice[2,3]
