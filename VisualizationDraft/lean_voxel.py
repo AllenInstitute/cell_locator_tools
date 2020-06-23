@@ -31,25 +31,9 @@ def _get_annotation(wc_origin, resolution, ann_pts, ann_class):
                            pixel_transformer=slice_to_pixel)
     return annotation
 
-def _get_plane(slice_transform, markup_pts, vol_coords, resolution, thickness):
+def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
-    c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
-                          markup_pts)
-    plane = planar_geometry.Plane.plane_from_many_points(c_markup_pts.transpose())
-
-    z_plane = np.dot(slice_transform._a_to_slice[2,:3],
-                     vol_coords) + slice_transform._a_to_slice[2,3]
-
-    upper_lim = 0.5*np.sqrt(3.0)*resolution
-    lower_lim = -1.0*thickness-upper_lim
-    in_plane = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
-
-    return plane, in_plane
-
-def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
-
-    if vol_coords is None:
-        vol_coords = _get_volume_coords(nx, ny, nz, resolution)
+    vol_coords = _get_volume_coords(nx, ny, nz, resolution)
 
     if markup['RepresentationType'] == 'spline':
         ann_class = spline_utils.SplineAnnotation
@@ -71,9 +55,16 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
         markup_pts[1,i_pt] = pt['y']
         markup_pts[2,i_pt] = pt['z']
 
-    plane, in_plane = _get_plane(slice_transform, markup_pts,
-                                 vol_coords, resolution,
-                                 thickness)
+    c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
+                          markup_pts)
+    plane = planar_geometry.Plane.plane_from_many_points(c_markup_pts.transpose())
+
+    z_plane = np.dot(slice_transform._a_to_slice[2,:3],
+                     vol_coords) + slice_transform._a_to_slice[2,3]
+
+    upper_lim = 0.5*np.sqrt(3.0)*resolution
+    lower_lim = -1.0*thickness-upper_lim
+    in_plane = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
 
     slice_coords = slice_transform.allen_to_slice(vol_coords[:,in_plane])
 
