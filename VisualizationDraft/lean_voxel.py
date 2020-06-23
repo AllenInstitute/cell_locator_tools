@@ -31,9 +31,10 @@ def _get_annotation(wc_origin, resolution, ann_pts, ann_class):
                            pixel_transformer=slice_to_pixel)
     return annotation
 
-def lean_voxel_mask(markup, nx, ny, nz, resolution):
+def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
 
-    vol_coords = _get_volume_coords(nx, ny, nz, resolution)
+    if vol_coords is None:
+        vol_coords = _get_volume_coords(nx, ny, nz, resolution)
 
     if markup['RepresentationType'] == 'spline':
         ann_class = spline_utils.SplineAnnotation
