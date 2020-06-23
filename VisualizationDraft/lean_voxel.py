@@ -16,6 +16,16 @@ def _get_volume_coords(nx, ny, nz, resolution):
     vol_coords[2,:] = mesh.pop(0).flatten()*resolution
     return vol_coords
 
+def _get_annotation(wc_origin, resolution, ann_pts, ann_class):
+    slice_to_pixel = coords.PixelTransformer(wc_origin,
+                                             np.identity(2, dtype=float),
+                                             resolution,
+                                             resolution)
+
+    annotation = ann_class(ann_pts[0,:], ann_pts[1,:],
+                           pixel_transformer=slice_to_pixel)
+    return annotation
+
 def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
     vol_coords = _get_volume_coords(nx, ny, nz, resolution)
@@ -59,18 +69,11 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     wc_origin = np.array([slice_coords[0,:].min(),
                           slice_coords[1,:].min()])
 
-    slice_to_pixel = coords.PixelTransformer(wc_origin,
-                                             np.identity(2, dtype=float),
-                                             resolution,
-                                             resolution)
+    annotation = _get_annotation(wc_origin, resolution,
+                                 slice_transform.c_to_slice(markup_pts),
+                                 ann_class)
 
-    ann_pts = slice_transform.c_to_slice(markup_pts)
-
-    annotation = ann_class(ann_pts[0,:], ann_pts[1,:],
-                           pixel_transformer=slice_to_pixel)
-
-
-    pixel_coords = slice_to_pixel.wc_to_pixels(slice_coords[:2,:])
+    pixel_coords = annotation.wc_to_pixels(slice_coords[:2,:])
 
     raw_mask = annotation.get_mask(resolution)
 
