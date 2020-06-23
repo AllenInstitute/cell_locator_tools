@@ -45,7 +45,7 @@ def _get_bdry(nx, ny, nz):
     del y
     bdry.append(xy)
     bdry.append((nz-1)*nx*ny+xy)
-    assert np.max(bdry[-1])<nx*ny*nz
+    #assert np.max(bdry[-1])<nx*ny*nz
     del xy
     mesh = np.meshgrid(y_range, z_range, indexing='ij')
     y = mesh[0].flatten()
@@ -56,7 +56,7 @@ def _get_bdry(nx, ny, nz):
     del y
     bdry.append(zy)
     bdry.append(zy+nx-1)
-    assert np.max(bdry[-1])<nx*ny*nz
+    #assert np.max(bdry[-1])<nx*ny*nz
     del zy
     mesh = np.meshgrid(x_range, z_range, indexing='ij')
     x = mesh[0].flatten()
@@ -67,10 +67,10 @@ def _get_bdry(nx, ny, nz):
     del z
     bdry.append(xz)
     bdry.append(xz+(ny-1)*nx)
-    assert np.max(bdry[-1])<nx*ny*nz
+    #assert np.max(bdry[-1])<nx*ny*nz
     del xz
     bdry = np.concatenate(bdry)
-    assert bdry.max()<nx*ny*nz
+    #assert bdry.max()<nx*ny*nz
     return bdry
 
 def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
