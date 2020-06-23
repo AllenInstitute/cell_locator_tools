@@ -66,9 +66,6 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     lower_lim = -1.0*thickness-upper_lim
     in_plane = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
 
-    print('vol_coords shape ',vol_coords.shape)
-    print('in_plane shape ',in_plane.shape)
-
     slice_coords = slice_transform.allen_to_slice(vol_coords[:,in_plane])
 
     wc_origin = np.array([slice_coords[0,:].min(),
