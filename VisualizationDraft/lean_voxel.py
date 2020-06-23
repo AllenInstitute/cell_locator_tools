@@ -31,6 +31,48 @@ def _get_annotation(wc_origin, resolution, ann_pts, ann_class):
                            pixel_transformer=slice_to_pixel)
     return annotation
 
+def _get_bdry(nx, ny, nz):
+    z_range = np.arange(nz, dtype=int)
+    y_range = np.arange(ny, dtype=int)
+    x_range = np.arange(nx, dtype=int)
+    bdry = []
+    mesh = np.meshgrid(y_range, x_range, indexing='ij')
+    y = mesh[0].flatten()
+    x = mesh[1].flatten()
+    del mesh
+    xy = y*nx+x
+    del x
+    del y
+    bdry.append(xy)
+    bdry.append((nz-1)*nx*ny+xy)
+    assert np.max(bdry[-1])<nx*ny*nz
+    del xy
+    mesh = np.meshgrid(y_range, z_range, indexing='ij')
+    y = mesh[0].flatten()
+    z = mesh[1].flatten()
+    del mesh
+    zy = z*nx*ny+y*nx
+    del z
+    del y
+    bdry.append(zy)
+    bdry.append(zy+nx-1)
+    assert np.max(bdry[-1])<nx*ny*nz
+    del zy
+    mesh = np.meshgrid(x_range, z_range, indexing='ij')
+    x = mesh[0].flatten()
+    z = mesh[1].flatten()
+    del mesh
+    xz = z*nx*ny+x
+    del x
+    del z
+    bdry.append(xz)
+    bdry.append(xz+(ny-1)*nx)
+    assert np.max(bdry[-1])<nx*ny*nz
+    del xz
+    bdry = np.concatenate(bdry)
+    assert bdry.max()<nx*ny*nz
+    return bdry
+
 def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
 
     if vol_coords is None:
