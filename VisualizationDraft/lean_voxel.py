@@ -124,7 +124,7 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
     center_allen = slice_transform.slice_to_allen(np.array([[center_x],
                                                             [center_y]]))
-    radius = 2.0*np.sqrt(thickness**2+radius**2)
+    radius = resolution+np.sqrt(thickness**2+radius**2)
 
     print('starting first_mask')
     t0 = time.time()
