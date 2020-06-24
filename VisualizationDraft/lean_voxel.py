@@ -74,10 +74,15 @@ def _get_bdry(nx, ny, nz):
     #assert bdry.max()<nx*ny*nz
     return bdry
 
-def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
+def _dex_to_vol(dex, nx, ny, nz, resolution):
+    zdex = dex//(nx*ny)
+    z = resolution*zdex
+    y = resolution*(dex-(nx*ny)*zdex)//nx
+    del zdex
+    x = resolution*(dex%nx)
+    return np.array([x, y, z])
 
-    if vol_coords is None:
-        vol_coords = _get_volume_coords(nx, ny, nz, resolution)
+def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
     if markup['RepresentationType'] == 'spline':
         ann_class = spline_utils.SplineAnnotation
@@ -100,7 +105,8 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
         markup_pts[2,i_pt] = pt['z']
 
     bdry = _get_bdry(nx, ny, nz)
-    edge_coords = slice_transform.allen_to_slice(vol_coords[:,bdry])
+    vol_coords = _dex_to_vol(bdry, nx, ny, nz, resolution)
+    edge_coords = slice_transform.allen_to_slice(vol_coords)
     wc_origin = np.array([edge_coords[0,:].min(),
                           edge_coords[1,:].min()])
 
@@ -120,33 +126,45 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
 
     center_allen = slice_transform.slice_to_allen(np.array([[center_x],
                                                             [center_y]]))
-    radius = 1.1*np.sqrt(thickness**2+radius**2)
+    radius = 2.0*np.sqrt(thickness**2+radius**2)
 
+    print('starting first_mask')
     t0 = time.time()
-    first_mask = np.logical_and(vol_coords[0,:]<center_allen[0,0]+radius,
-                 np.logical_and(vol_coords[0,:]>center_allen[0,0]-radius,
-                 np.logical_and(vol_coords[1,:]<center_allen[1,0]+radius,
-                 np.logical_and(vol_coords[1,:]>center_allen[1,0]-radius,
-                 np.logical_and(vol_coords[2,:]<center_allen[2,0]+radius,
-                                vol_coords[2,:]>center_allen[2,0]-radius)))))
+    first_mask = np.ones(nx*ny*nz, dtype=bool)
+    center_voxel = np.round(center_allen/resolution).astype(int)
+    radius_voxel = np.ceil(radius/resolution).astype(int)
+
+    xyz_min = center_voxel-radius_voxel
+    xyz_max = center_voxel+radius_voxel
+
+    xr = np.arange(max(0,xyz_min[0]), min(xyz_max[0],nx), dtype=int)
+    yr = np.arange(max(0,xyz_min[1]), min(xyz_max[1],ny), dtype=int)
+    zr = np.arange(max(0,xyz_min[2]), min(xyz_max[2],nz), dtype=int)
+    mesh = np.meshgrid(xr, yr, zr)
+    raw_dex = (mesh[2]*nx*ny+mesh[1]*nx+mesh[0]).flatten()
+    del mesh
 
     print('first mask in %e' % (time.time()-t0))
 
-    z_plane = np.dot(slice_transform._a_to_slice[2,:3],
-                     vol_coords[:,first_mask]) + slice_transform._a_to_slice[2,3]
+    vol_coords_raw_dex = _dex_to_vol(raw_dex, nx, ny, nz, resolution)
 
-    in_plane = np.zeros(nx*ny*nz, dtype=bool)
+    z_plane = np.dot(slice_transform._a_to_slice[2,:3],
+                     vol_coords_raw_dex) + slice_transform._a_to_slice[2,3]
 
     upper_lim = 0.5*np.sqrt(3.0)*resolution
     lower_lim = -1.0*thickness-upper_lim
-    in_plane_raw = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
+    in_plane_mask = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
 
-    in_plane[first_mask] = in_plane_raw
+    in_plane_dexes = raw_dex[in_plane_mask]
+
+    del in_plane_mask
+    del raw_dex
     del first_mask
     del z_plane
+    del vol_coords_raw_dex
 
-    slice_coords = slice_transform.allen_to_slice(vol_coords[:,in_plane])
-
+    vol_coords_in_plane = _dex_to_vol(in_plane_dexes, nx, ny, nz, resolution)
+    slice_coords = slice_transform.allen_to_slice(vol_coords_in_plane)
     pixel_coords = annotation.wc_to_pixels(slice_coords[:2,:])
 
     max_x = pixel_coords[0,:].max()+1
@@ -158,7 +176,7 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
     test_pixel_indices = pixel_coords[0,:]*max_y
     test_pixel_indices += pixel_coords[1,:]
     valid_voxels = np.zeros(nx*ny*nz, dtype=bool)
-    valid_voxels[in_plane] = pixel_mask[test_pixel_indices]
+    valid_voxels[in_plane_dexes] = pixel_mask[test_pixel_indices]
 
     return valid_voxels
 

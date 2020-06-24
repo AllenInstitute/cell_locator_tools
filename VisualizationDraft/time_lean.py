@@ -26,10 +26,6 @@ if __name__ == "__main__":
     ct = 0
 
     t0 = time.time()
-    vol_coords = _get_volume_coords(img_shape[2], img_shape[1], img_shape[0], resolution)
-    time_vol = time.time()-t0
-
-    t0 = time.time()
     for n in fname_list[:10]:
         if not n.endswith('json'):
             continue
@@ -39,12 +35,12 @@ if __name__ == "__main__":
             annotation = json.load(in_file)
             markup = annotation['Markups'][0]
 
+        print('go')
         test = lean_voxel_mask(markup, img_shape[2], img_shape[1], img_shape[0],
-                               resolution, vol_coords=vol_coords)
+                               resolution)
 
         ct += 1
     dur = time.time()-t0
     print('ran ',ct)
-    print('vol %e seconds' % time_vol)
     per = dur/ct
     print('mask per %e seconds' % per)

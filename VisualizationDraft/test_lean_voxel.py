@@ -52,7 +52,7 @@ if __name__ == "__main__":
             markup = annotation['Markups'][0]
 
         test = lean_voxel_mask(markup, img_shape[2], img_shape[1], img_shape[0],
-                               resolution, vol_coords=brain_vol.brain_volume)
+                               resolution)
 
         print('control %e' % control.sum())
         print('test %e' % test.sum())
