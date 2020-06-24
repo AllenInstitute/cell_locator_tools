@@ -130,7 +130,6 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
     print('starting first_mask')
     t0 = time.time()
-    first_mask = np.ones(nx*ny*nz, dtype=bool)
     center_voxel = np.round(center_allen/resolution).astype(int)
     radius_voxel = np.ceil(radius/resolution).astype(int)
 
@@ -159,7 +158,6 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
 
     del in_plane_mask
     del raw_dex
-    del first_mask
     del z_plane
     del vol_coords_raw_dex
 
