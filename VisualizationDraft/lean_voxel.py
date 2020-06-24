@@ -140,26 +140,26 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     yr = np.arange(max(0,xyz_min[1]), min(xyz_max[1],ny), dtype=int)
     zr = np.arange(max(0,xyz_min[2]), min(xyz_max[2],nz), dtype=int)
     mesh = np.meshgrid(xr, yr, zr)
-    raw_dex = (mesh[2]*nx*ny+mesh[1]*nx+mesh[0]).flatten()
+    first_dex = (mesh[2]*nx*ny+mesh[1]*nx+mesh[0]).flatten()
     del mesh
 
     print('first mask in %e' % (time.time()-t0))
 
-    vol_coords_raw_dex = _dex_to_vol(raw_dex, nx, ny, nz, resolution)
+    vol_coords_first_dex = _dex_to_vol(first_dex, nx, ny, nz, resolution)
 
     z_plane = np.dot(slice_transform._a_to_slice[2,:3],
-                     vol_coords_raw_dex) + slice_transform._a_to_slice[2,3]
+                     vol_coords_first_dex) + slice_transform._a_to_slice[2,3]
 
     upper_lim = 0.5*np.sqrt(3.0)*resolution
     lower_lim = -1.0*thickness-upper_lim
     in_plane_mask = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
 
-    in_plane_dexes = raw_dex[in_plane_mask]
+    in_plane_dexes = first_dex[in_plane_mask]
 
     del in_plane_mask
-    del raw_dex
+    del first_dex
     del z_plane
-    del vol_coords_raw_dex
+    del vol_coords_first_dex
 
     vol_coords_in_plane = _dex_to_vol(in_plane_dexes, nx, ny, nz, resolution)
     slice_coords = slice_transform.allen_to_slice(vol_coords_in_plane)
