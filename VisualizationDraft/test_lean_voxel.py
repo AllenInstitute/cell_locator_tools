@@ -25,6 +25,10 @@ if __name__ == "__main__":
 
     resolution  = 10
     img_name = 'average_template_10.nrrd'
+
+    resolution = 25
+    img_name = 'atlasVolume.mhd'
+
     img = SimpleITK.ReadImage(img_name)
     img_data = SimpleITK.GetArrayFromImage(img)
     img_shape = copy.deepcopy(img_data.shape)
