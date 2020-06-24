@@ -34,6 +34,7 @@ if __name__ == "__main__":
 
     ann_dir = '../marga_json_files_20200619'
     fname_list = os.listdir(ann_dir)
+    fname_list.sort()
     ct = 0
 
     vol_coords = _get_volume_coords(img_shape[2], img_shape[1], img_shape[0],
