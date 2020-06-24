@@ -11,6 +11,7 @@ import coords
 import planar_geometry
 import cell_locator_utils
 import spline_utils
+import time
 
 def _get_volume_coords(nx, ny, nz, resolution):
 
@@ -120,12 +121,16 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
     center_allen = slice_transform.slice_to_allen(np.array([[center_x],
                                                             [center_y]]))
     radius = 1.1*np.sqrt(thickness**2+radius**2)
+
+    t0 = time.time()
     first_mask = np.logical_and(vol_coords[0,:]<center_allen[0,0]+radius,
                  np.logical_and(vol_coords[0,:]>center_allen[0,0]-radius,
                  np.logical_and(vol_coords[1,:]<center_allen[1,0]+radius,
                  np.logical_and(vol_coords[1,:]>center_allen[1,0]-radius,
                  np.logical_and(vol_coords[2,:]<center_allen[2,0]+radius,
                                 vol_coords[2,:]>center_allen[2,0]-radius)))))
+
+    print('first mask in %e' % (time.time()-t0))
 
     z_plane = np.dot(slice_transform._a_to_slice[2,:3],
                      vol_coords[:,first_mask]) + slice_transform._a_to_slice[2,3]
