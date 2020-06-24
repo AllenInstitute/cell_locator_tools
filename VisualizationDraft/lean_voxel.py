@@ -103,25 +103,46 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution, vol_coords=None):
     wc_origin = np.array([edge_coords[0,:].min(),
                           edge_coords[1,:].min()])
 
+    markup_slice = slice_transform.c_to_slice(markup_pts)
     annotation = _get_annotation(wc_origin, resolution,
-                                 slice_transform.c_to_slice(markup_pts),
+                                 markup_slice,
                                  ann_class)
+    raw_mask = annotation.get_mask(resolution)
 
-    c_markup_pts = np.dot(slice_transform._c_to_a_transposition[:3,:3],
-                          markup_pts)
+    center_x = np.mean(markup_slice[0,:])
+    center_y = np.mean(markup_slice[1,:])
+
+    d = np.sqrt((annotation.border_x-center_x)**2 +
+                (annotation.border_y-center_y)**2)
+
+    radius = d.max()
+
+    center_allen = slice_transform.slice_to_allen(np.array([[center_x],
+                                                            [center_y]]))
+    radius = 1.1*np.sqrt(thickness**2+radius**2)
+    first_mask = np.logical_and(vol_coords[0,:]<center_allen[0,0]+radius,
+                 np.logical_and(vol_coords[0,:]>center_allen[0,0]-radius,
+                 np.logical_and(vol_coords[1,:]<center_allen[1,0]+radius,
+                 np.logical_and(vol_coords[1,:]>center_allen[1,0]-radius,
+                 np.logical_and(vol_coords[2,:]<center_allen[2,0]+radius,
+                                vol_coords[2,:]>center_allen[2,0]-radius)))))
 
     z_plane = np.dot(slice_transform._a_to_slice[2,:3],
-                     vol_coords) + slice_transform._a_to_slice[2,3]
+                     vol_coords[:,first_mask]) + slice_transform._a_to_slice[2,3]
+
+    in_plane = np.zeros(nx*ny*nz, dtype=bool)
 
     upper_lim = 0.5*np.sqrt(3.0)*resolution
     lower_lim = -1.0*thickness-upper_lim
-    in_plane = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
+    in_plane_raw = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
+
+    in_plane[first_mask] = in_plane_raw
+    del first_mask
+    del z_plane
 
     slice_coords = slice_transform.allen_to_slice(vol_coords[:,in_plane])
 
     pixel_coords = annotation.wc_to_pixels(slice_coords[:2,:])
-
-    raw_mask = annotation.get_mask(resolution)
 
     max_x = pixel_coords[0,:].max()+1
     max_y = pixel_coords[1,:].max()+1
