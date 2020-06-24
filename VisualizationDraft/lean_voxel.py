@@ -137,13 +137,15 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     xr = np.arange(max(0,xyz_min[0]), min(xyz_max[0],nx), dtype=int)
     yr = np.arange(max(0,xyz_min[1]), min(xyz_max[1],ny), dtype=int)
     zr = np.arange(max(0,xyz_min[2]), min(xyz_max[2],nz), dtype=int)
-    mesh = np.meshgrid(xr, yr, zr)
-    first_dex = (mesh[2]*nx*ny+mesh[1]*nx+mesh[0]).flatten()
-    del mesh
+    mesh = np.meshgrid(zr, yr, xr)
+    idx = mesh.pop(2).flatten()
+    idy = mesh.pop(1).flatten()
+    idz = mesh.pop(0).flatten()
 
-    print('first mask in %e' % (time.time()-t0))
+    print('first mask in %e (%.2e)' % ((time.time()-t0), len(idx)/(nx*ny*nz)))
 
-    vol_coords_first_dex = _dex_to_vol(first_dex, nx, ny, nz, resolution)
+    vol_coords_first_dex = np.array([idx*resolution, idy*resolution, idz*resolution])
+    d_vol = time.time()-t0
 
     z_plane = np.dot(slice_transform._a_to_slice[2,:3],
                      vol_coords_first_dex) + slice_transform._a_to_slice[2,3]
@@ -152,14 +154,15 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     lower_lim = -1.0*thickness-upper_lim
     in_plane_mask = np.logical_and(z_plane<=upper_lim, z_plane>=lower_lim)
 
-    in_plane_dexes = first_dex[in_plane_mask]
+    idx = idx[in_plane_mask]
+    idy = idy[in_plane_mask]
+    idz = idz[in_plane_mask]
+    vol_coords_in_plane = vol_coords_first_dex[:,in_plane_mask]
 
     del in_plane_mask
-    del first_dex
     del z_plane
     del vol_coords_first_dex
 
-    vol_coords_in_plane = _dex_to_vol(in_plane_dexes, nx, ny, nz, resolution)
     slice_coords = slice_transform.allen_to_slice(vol_coords_in_plane)
     pixel_coords = annotation.wc_to_pixels(slice_coords[:2,:])
 
@@ -172,6 +175,7 @@ def lean_voxel_mask(markup, nx, ny, nz, resolution):
     test_pixel_indices = pixel_coords[0,:]*max_y
     test_pixel_indices += pixel_coords[1,:]
     valid_voxels = np.zeros(nx*ny*nz, dtype=bool)
+    in_plane_dexes = idz*nx*ny+idy*nx+idx
     valid_voxels[in_plane_dexes] = pixel_mask[test_pixel_indices]
 
     return valid_voxels
