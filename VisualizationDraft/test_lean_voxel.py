@@ -39,7 +39,7 @@ if __name__ == "__main__":
     vol_coords = _get_volume_coords(img_shape[2], img_shape[1], img_shape[0],
                                     resolution)
 
-    for n in fname_list:
+    for n in fname_list[:4]:
         if not n.endswith('json'):
             continue
         fname = os.path.join(ann_dir, n)
@@ -54,6 +54,8 @@ if __name__ == "__main__":
         test = lean_voxel_mask(markup, img_shape[2], img_shape[1], img_shape[0],
                                resolution, vol_coords=brain_vol.brain_volume)
 
+        print('control %e' % control.sum())
+        print('test %e' % test.sum())
         np.testing.assert_array_equal(control, test)
         ct += 1
     print('ran ',ct)
