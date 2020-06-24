@@ -75,10 +75,8 @@ def _get_bdry(nx, ny, nz):
     return bdry
 
 def _dex_to_vol(dex, nx, ny, nz, resolution):
-    zdex = dex//(nx*ny)
-    z = resolution*zdex
-    y = resolution*(dex-(nx*ny)*zdex)//nx
-    del zdex
+    z = resolution*(dex//(nx*ny))
+    y = resolution*((dex%(ny*nx))//nx)
     x = resolution*(dex%nx)
     return np.array([x, y, z])
 
