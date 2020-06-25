@@ -103,8 +103,8 @@ class VoxelMask(object):
             markup_pts[2,i_pt] = pt['z']
 
         bdry = self._get_bdry()
-        vol_coords = self._dex_to_vol(bdry)
-        edge_coords = slice_transform.allen_to_slice(vol_coords)
+        bdry_vol_coords = self._dex_to_vol(bdry)
+        edge_coords = slice_transform.allen_to_slice(bdry_vol_coords)
         wc_origin = np.array([edge_coords[0,:].min(),
                               edge_coords[1,:].min()])
 
