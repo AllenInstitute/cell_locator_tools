@@ -117,14 +117,14 @@ class VoxelMask(object):
         center_x = np.mean(markup_slice[0,:])
         center_y = np.mean(markup_slice[1,:])
 
-        d = np.sqrt((annotation.border_x-center_x)**2 +
-                    (annotation.border_y-center_y)**2)
+        dsq = ((annotation.border_x-center_x)**2 +
+               (annotation.border_y-center_y)**2)
 
-        radius = d.max()
+        radius_sq = dsq.max()
 
         center_allen = slice_transform.slice_to_allen(np.array([[center_x],
                                                                 [center_y]]))
-        radius = self.resolution+np.sqrt(thickness**2+radius**2)
+        radius = self.resolution+np.sqrt(thickness**2+radius_sq)
 
         print('starting first_mask')
         t0 = time.time()
