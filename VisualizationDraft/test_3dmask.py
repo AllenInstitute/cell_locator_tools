@@ -11,13 +11,15 @@ import cell_locator_utils
 import copy
 import time
 
-from lean_voxel import lean_voxel_mask
+from lean_voxel import VoxelMask
+from test_lean_voxel import get_control_mask
 
 if __name__ == "__main__":
     resolution = 25
     img_name = 'atlasVolume.mhd'
     img = SimpleITK.ReadImage(img_name)
     img_data = SimpleITK.GetArrayFromImage(img)
+    img_shape = copy.deepcopy(img_data.shape)
 
     nz = img_data.shape[0]
     ny = img_data.shape[1]
@@ -32,16 +34,29 @@ if __name__ == "__main__":
     t0 = time.time()
 
     slice_img = brain_vol.slice_img_from_annotation(annotation_name,
-                                                    from_pts=True)
+                                                    from_pts=False)
 
     with open(annotation_name, 'rb') as in_file:
         annotation_dict = json.load(in_file)
     markup = annotation_dict['Markups'][0]
 
-    #valid_voxels = brain_vol.get_voxel_mask(slice_img.brain_slice, markup)
+    valid_voxels_0 = brain_vol.get_voxel_mask(slice_img.brain_slice, markup)
     t0 = time.time()
-    valid_voxels = lean_voxel_mask(markup, nx, ny, nz, resolution)
+    valid_voxels = get_control_mask(annotation_name, brain_vol, img_shape)
+    #voxel_mask = VoxelMask(nx, ny, nz, resolution)
+    #valid_voxels = voxel_mask.get_voxel_mask(markup)
+    np.testing.assert_array_equal(valid_voxels, valid_voxels_0)
+
+
+
     print('\n')
+    print('control ',valid_voxels_0.sum())
+    print('test ',valid_voxels.sum())
+    test_not_control = np.logical_and(valid_voxels, np.logical_not(valid_voxels_0)).sum()
+    control_not_test = np.logical_and(np.logical_not(valid_voxels), valid_voxels_0).sum()
+    print('test_not_control ',test_not_control)
+    print('control_not_test ',control_not_test)
+    #np.testing.assert_array_equal(valid_voxels, valid_voxels_0)
     print('got valid_voxels in %e seconds -- %d' % ((time.time()-t0), valid_voxels.sum()))
     print('shape ',valid_voxels.shape)
 
