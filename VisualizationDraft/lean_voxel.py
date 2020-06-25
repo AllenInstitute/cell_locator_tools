@@ -21,6 +21,8 @@ class VoxelMask(object):
         self.ny = ny
         self.nz = nz
         self.resolution =resolution
+        bdry = self._get_bdry()
+        self.bdry_vol_coords = self._dex_to_vol(bdry)
 
     def _get_annotation(self, wc_origin, ann_pts, ann_class):
         slice_to_pixel = coords.PixelTransformer(wc_origin,
@@ -102,9 +104,7 @@ class VoxelMask(object):
             markup_pts[1,i_pt] = pt['y']
             markup_pts[2,i_pt] = pt['z']
 
-        bdry = self._get_bdry()
-        bdry_vol_coords = self._dex_to_vol(bdry)
-        edge_coords = slice_transform.allen_to_slice(bdry_vol_coords)
+        edge_coords = slice_transform.allen_to_slice(self.bdry_vol_coords)
         wc_origin = np.array([edge_coords[0,:].min(),
                               edge_coords[1,:].min()])
 
