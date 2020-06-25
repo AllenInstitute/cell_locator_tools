@@ -2,7 +2,7 @@ import numpy as np
 import os
 import SimpleITK
 import json
-from lean_voxel import lean_voxel_mask
+from lean_voxel import VoxelMask
 import copy
 import time
 import argparse
@@ -25,6 +25,8 @@ if __name__ == "__main__":
     fname_list = os.listdir(ann_dir)
     ct = 0
 
+    voxel_mask = VoxelMask(img_shape[2], img_shape[1], img_shape[0], resolution)
+
     t0 = time.time()
     for n in fname_list[:10]:
         if not n.endswith('json'):
@@ -36,8 +38,7 @@ if __name__ == "__main__":
             markup = annotation['Markups'][0]
 
         print('go')
-        test = lean_voxel_mask(markup, img_shape[2], img_shape[1], img_shape[0],
-                               resolution)
+        test = voxel_mask.get_voxel_mask(markup)
 
         ct += 1
     dur = time.time()-t0

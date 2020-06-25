@@ -3,7 +3,7 @@ import os
 import SimpleITK
 import json
 import cell_locator_utils
-from lean_voxel import lean_voxel_mask
+from lean_voxel import VoxelMask
 import copy
 import time
 import argparse
@@ -41,6 +41,8 @@ if __name__ == "__main__":
     fname_list.sort()
     ct = 0
 
+    voxel_mask = VoxelMask(img_shape[2], img_shape[1], img_shape[0], resolution)
+
     for n in fname_list[:4]:
         if not n.endswith('json'):
             continue
@@ -53,8 +55,7 @@ if __name__ == "__main__":
             annotation = json.load(in_file)
             markup = annotation['Markups'][0]
 
-        test = lean_voxel_mask(markup, img_shape[2], img_shape[1], img_shape[0],
-                               resolution)
+        test = voxel_mask.get_voxel_mask(markup)
 
         print('control %e' % control.sum())
         print('test %e' % test.sum())
