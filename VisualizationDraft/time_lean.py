@@ -2,7 +2,7 @@ import numpy as np
 import os
 import SimpleITK
 import json
-from lean_voxel import lean_voxel_mask, _get_volume_coords
+from lean_voxel import lean_voxel_mask
 import copy
 import time
 import argparse

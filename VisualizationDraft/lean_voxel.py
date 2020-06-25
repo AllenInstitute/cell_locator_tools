@@ -13,15 +13,6 @@ import cell_locator_utils
 import spline_utils
 import time
 
-def _get_volume_coords(nx, ny, nz, resolution):
-
-    mesh = np.meshgrid(np.arange(nz), np.arange(ny), np.arange(nx), indexing='ij')
-    vol_coords = np.zeros((3,nx*ny*nz), dtype=float)
-    vol_coords[0,:] = mesh.pop(2).flatten()*resolution
-    vol_coords[1,:] = mesh.pop(1).flatten()*resolution
-    vol_coords[2,:] = mesh.pop(0).flatten()*resolution
-    return vol_coords
-
 def _get_annotation(wc_origin, resolution, ann_pts, ann_class):
     slice_to_pixel = coords.PixelTransformer(wc_origin,
                                              np.identity(2, dtype=float),

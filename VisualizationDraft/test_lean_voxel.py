@@ -3,7 +3,7 @@ import os
 import SimpleITK
 import json
 import cell_locator_utils
-from lean_voxel import lean_voxel_mask, _get_volume_coords
+from lean_voxel import lean_voxel_mask
 import copy
 import time
 import argparse
@@ -40,9 +40,6 @@ if __name__ == "__main__":
     fname_list = os.listdir(ann_dir)
     fname_list.sort()
     ct = 0
-
-    vol_coords = _get_volume_coords(img_shape[2], img_shape[1], img_shape[0],
-                                    resolution)
 
     for n in fname_list[:4]:
         if not n.endswith('json'):
