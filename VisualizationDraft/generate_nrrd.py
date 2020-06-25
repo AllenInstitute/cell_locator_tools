@@ -95,15 +95,18 @@ if __name__ == "__main__":
     p_list = []
     per_thread = len(annotation_fname_list)//args.n_threads
 
-    for i0 in range(0, len(annotation_fname_list), per_thread):
-        sub_list = annotation_fname_list[i0:i0+per_thread]
-        p = multiprocessing.Process(target=write_annotation,
-                                    args=(sub_list, annotation_dir,
-                                          brain_vol, args.out_dir,
-                                          img_shape))
-        p.start()
-        p_list.append(p)
-    for p in p_list:
-        p.join()
+    if args.n_threads == 1:
+        write_annotation(annotation_fname_list, annotation_dir, brain_vol, args.out_dir, img_shape)
+    else:
+        for i0 in range(0, len(annotation_fname_list), per_thread):
+            sub_list = annotation_fname_list[i0:i0+per_thread]
+            p = multiprocessing.Process(target=write_annotation,
+                                        args=(sub_list, annotation_dir,
+                                              brain_vol, args.out_dir,
+                                              img_shape))
+            p.start()
+            p_list.append(p)
+        for p in p_list:
+            p.join()
 
     print('done')
