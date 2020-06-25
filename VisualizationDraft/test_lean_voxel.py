@@ -39,9 +39,6 @@ if __name__ == "__main__":
     ann_dir = '../marga_json_files_20200619'
     fname_list = os.listdir(ann_dir)
     fname_list.sort()
-
-    ann_dir = '../CellLocatorAnnotations'
-    fname_list = ['annotation_20200602.json']
     ct = 0
 
     voxel_mask = VoxelMask(img_shape[2], img_shape[1], img_shape[0], resolution)
@@ -62,10 +59,6 @@ if __name__ == "__main__":
 
         print('control %e' % control.sum())
         print('test %e' % test.sum())
-        test_not_control = np.logical_and(test, np.logical_not(control)).sum()
-        control_not_test = np.logical_and(control, np.logical_not(test)).sum()
-        print('test_not_control ',test_not_control)
-        print('control_not_test ',control_not_test)
         np.testing.assert_array_equal(control, test)
         ct += 1
     print('ran ',ct)
