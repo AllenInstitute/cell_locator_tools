@@ -48,9 +48,11 @@ if __name__ == "__main__":
             continue
         fname = os.path.join(ann_dir, n)
 
+        t0 = time.time()
         control = get_control_mask(fname, brain_vol, img_shape)
-        print('got control')
+        print('\ngot control -- %e seconds' % (time.time()-t0))
 
+        t0 = time.time()
         with open(fname, 'rb') as in_file:
             annotation = json.load(in_file)
             markup = annotation['Markups'][0]
@@ -58,7 +60,7 @@ if __name__ == "__main__":
         test = voxel_mask.get_voxel_mask(markup)
 
         print('control %e' % control.sum())
-        print('test %e' % test.sum())
+        print('test %e -- %e seconds' % (test.sum(), time.time()-t0))
         np.testing.assert_array_equal(control, test)
         ct += 1
     print('ran ',ct)
