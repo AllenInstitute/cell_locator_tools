@@ -1,6 +1,8 @@
 import SimpleITK
 from lean_voxel import VoxelMask
 import json
+import numpy as np
+import os
 import argparse
 
 if __name__ == "__main__":
@@ -33,15 +35,31 @@ if __name__ == "__main__":
                            atlas_array.shape[0],
                            resolution)
 
-    with open(args.json_name, 'rb') as in_file:
-        annotation = json.load(in_file)
-        markup = annotation['Markups'][0]
+    output_img = np.zeros(atlas_array.shape[0]*atlas_array.shape[1]*atlas_array.shape[2],
+                          dtype='uint8')
 
-    mask = voxel_mask.get_voxel_mask(markup)
-    print(mask)
-    print(mask.shape)
+    json_file_list = []
+    if os.path.isfile(args.json_name):
+        json_file_list.append(args.json_name)
+    elif os.path.isdir(args.json_name):
+        file_name_list = os.listdir(args.json_name)
+        for name in file_name_list:
+            if name.endswith('json'):
+                json_file_list.append(os.path.join(args.json_name, name))
 
-    output_img = SimpleITK.GetImageFromArray(mask.reshape(atlas_array.shape).astype('uint8'))
+
+    for ii, json_name in enumerate(json_file_list):
+
+        with open(json_name, 'rb') as in_file:
+            annotation = json.load(in_file)
+            markup = annotation['Markups'][0]
+
+        mask = voxel_mask.get_voxel_mask(markup)
+        output_img[mask] = ii+1
+
+
+
+    output_img = SimpleITK.GetImageFromArray(output_img.reshape(atlas_array.shape))
     output_img.SetSpacing((resolution, resolution, resolution))
     writer = SimpleITK.ImageFileWriter()
     writer.SetFileName(args.out_name)
