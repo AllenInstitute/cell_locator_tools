@@ -4,6 +4,7 @@ import json
 import numpy as np
 import os
 import argparse
+import time
 
 if __name__ == "__main__":
 
@@ -36,7 +37,7 @@ if __name__ == "__main__":
                            resolution)
 
     output_img = np.zeros(atlas_array.shape[0]*atlas_array.shape[1]*atlas_array.shape[2],
-                          dtype='uint8')
+                          dtype=int)
 
     json_file_list = []
     if os.path.isfile(args.json_name):
@@ -48,14 +49,24 @@ if __name__ == "__main__":
                 json_file_list.append(os.path.join(args.json_name, name))
 
 
+    t0 = time.time()
     for ii, json_name in enumerate(json_file_list):
 
         with open(json_name, 'rb') as in_file:
             annotation = json.load(in_file)
             markup = annotation['Markups'][0]
+        if markup is None:
+            continue
 
         mask = voxel_mask.get_voxel_mask(markup)
         output_img[mask] = ii+1
+        if ii%100 == 0 and ii>0:
+            duration = time.time()-t0
+            per = duration/ii
+            pred = per*len(json_file_list)
+            print('%d in %e seconds (per %e; predict %e)' % (ii,duration,per,pred))
+
+    print('took %e s per' % ((time.time()-t0)/len(json_file_list)))
 
 
 
