@@ -1,5 +1,5 @@
 import SimpleITK
-from lean_voxel import VoxelMask
+from voxel_mask import VoxelMask
 import json
 import numpy as np
 import os

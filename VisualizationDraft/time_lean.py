@@ -2,7 +2,7 @@ import numpy as np
 import os
 import SimpleITK
 import json
-from lean_voxel import VoxelMask
+from voxel_mask import VoxelMask
 import copy
 import time
 import argparse
