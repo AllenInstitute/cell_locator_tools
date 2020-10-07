@@ -1,6 +1,10 @@
 import numpy as np
 
 def v_from_pts(pt1, pt2):
+    """
+    Return the normalized vector pointing
+    from pt1 to pt2
+    """
     v = pt1-pt2
     n = np.sqrt(np.sum(v**2))
     if n != 0.0:
@@ -8,12 +12,20 @@ def v_from_pts(pt1, pt2):
     return v
 
 def v_cross(v1, v2):
+    """
+    Return the cross product of v1 and v2
+    """
     v = np.array([v1[1]*v2[2]-v1[2]*v2[1],
                   v1[2]*v2[0]-v1[0]*v2[2],
                   v1[0]*v2[1]-v1[1]*v2[0]])
     return v/np.sqrt(np.sum(v**2))
 
 def rot_about_z(ang_deg):
+    """
+    Return the 3x3 matrix corresponding
+    to a rotation about the z axis
+    (ang_deg is the angle in degrees)
+    """
     theta = np.radians(ang_deg)
     m = np.array([[np.cos(theta), -np.sin(theta), 0.0],
                   [np.sin(theta), np.cos(theta), 0.0],
@@ -21,6 +33,11 @@ def rot_about_z(ang_deg):
     return m
 
 def rot_about_y(ang_deg):
+    """
+    Return the 3x3 matrix corresponding
+    to a rotation about the y axis
+    (ang_deg is the angle in degrees)
+    """
     theta = np.radians(ang_deg)
     m = np.array([[np.cos(theta), 0.0, np.sin(theta)],
                   [0.0, 1.0, 0.0],
@@ -28,6 +45,11 @@ def rot_about_y(ang_deg):
     return m
 
 def rot_about_x(ang_deg):
+    """
+    Return the 3x3 matrix corresponding
+    to a rotation about the x axis
+    (ang_deg is the angle in degrees)
+    """
     theta = np.radians(ang_deg)
     m = np.array([[1.0, 0.0, 0.0],
                   [0.0, np.cos(theta), -np.sin(theta)],
@@ -39,6 +61,7 @@ def rot_about_x(ang_deg):
 def rotate_v_into_w_2d(v, w, already_normed=False):
     """
     Find matrix that rotates the vector v into the vector w
+    (2D vectors)
     """
     if not already_normed:
         v = v/np.sqrt(np.sum(v**2))
@@ -49,6 +72,10 @@ def rotate_v_into_w_2d(v, w, already_normed=False):
 
 
 def rotate_v_into_w_3d(v, w):
+    """
+    Find matrix that rotates the vector v into the vector w
+    (3D vectors)
+    """
     # first find matrices to rotate v, w in to the y,z plane
     # then find the matrix to rotate those projections into each other
     # then apply the inverse of the matrix rotating w in the y,z plane
@@ -92,17 +119,33 @@ class Plane(object):
         return self._eps
 
     def __init__(self, origin, normal):
+        """
+        Instantiate a plane from a point (origin) and
+        a normal vector (a 3-element numpy array)
+        """
         self._origin = np.copy(origin)
         self._normal = np.copy(normal)
         self._normal /= np.sqrt(np.sum(self._normal**2))
         self._eps = 1.0e-10
 
     def set_origin(self, origin_in):
+        """
+        Change the origin of the plane
+        """
         if not self.in_plane(origin_in):
             raise RuntimeError("Cannot set origin; this point not in plane")
         self._origin = np.copy(origin_in)
 
     def in_plane(self, pt, tol=None):
+        """
+        Return a boolean indicating whether or not
+        the pt (a 3-element numpy array) is in the plane.
+
+        tol is a float denoting the tolerance of the
+        test (i.e. if tol=1.0e-6, then any point
+        closer than 1.0e-6 to the plane counts as being
+        in the plane)
+        """
         if tol is not None:
             local_eps = tol
         else:
@@ -116,6 +159,9 @@ class Plane(object):
 
     @classmethod
     def plane_from_points(cls, pt1, pt2, pt3):
+        """
+        Instantiate a plane from three points
+        """
         origin = pt3
         v1 = v_from_pts(pt1, origin)
         v2 = v_from_pts(pt2, origin)
@@ -124,6 +170,11 @@ class Plane(object):
 
     @classmethod
     def plane_from_many_points(cls, pt_list):
+        """
+        Instantiate a plane from a list of many points.
+        Will raise an AssertionError if the points are not
+        coplanar.
+        """
         planar_pts = [pt_list[0]]
         for ii in range(1,len(pt_list),1):
             is_valid = True
