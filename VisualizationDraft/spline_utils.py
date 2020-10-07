@@ -380,6 +380,10 @@ class AnnotationBase(object):
         return self._mask
 
     def _build_boundary(self, resolution, threshold_factor):
+        """
+        Set the member variables that store the lists of boundary pixels
+        for the annotation
+        """
         self._clean_border()
 
         (border_x,
@@ -423,6 +427,10 @@ class AnnotationBase(object):
         sorted_dex = np.argsort(self._border_x_pixels)
         self._border_x_pixels_by_x = self._border_x_pixels[sorted_dex]
         self._border_y_pixels_by_x = self._border_y_pixels[sorted_dex]
+
+        # create lookups that allow you to lookup the x (y) values
+        # that bound rows (columns)
+
         self._by_x_lookup = {}
         for ix in np.unique(self._border_x_pixels_by_x):
             valid = np.where(self._border_x_pixels_by_x==ix)
@@ -437,6 +445,11 @@ class AnnotationBase(object):
             self._by_y_lookup[iy] = (valid[0].min(), valid[0].max()+1)
 
     def _build_raw_boundary(self, resolution, threshold_factor):
+        """
+        Generate naive lists of x and y values for pixels on the boundary
+        of the annotation (self._build_boundary will clean this list up
+        for redundant pixels)
+        """
         border_x = []
         border_y = []
         self._setup_drawing()
@@ -474,6 +487,11 @@ class AnnotationBase(object):
 
 
 class SplineAnnotation(AnnotationBase):
+    """
+    An annotation in which boundaries are drawn as
+    parametric curves in which x(t) and y(t) are
+    cubic splines.
+    """
 
     def n_segments(self):
         return len(self._spline.x)
@@ -486,6 +504,10 @@ class SplineAnnotation(AnnotationBase):
 
 
 class PolyLineAnnotation(AnnotationBase):
+    """
+    An annotation in which boundaries are drawn as straight
+    lines between points
+    """
 
     def n_segments(self):
         return len(self._x_vals)
