@@ -86,6 +86,10 @@ class CellLocatorTransformation(object):
         return slice_to_c
 
     def slice_to_c_from_points(self, markup):
+        """
+        Get matrix for transforming from slice coordinate to CellLocator
+        3D coordinates from annotation['Points']
+        """
         pts = []
         for obj in markup['Points']:
             pts.append(np.array([obj['x'], obj['y'], obj['z']]))
@@ -122,12 +126,53 @@ class CellLocatorTransformation(object):
         return slice_to_c
 
     def allen_to_c(self, pts):
+        """
+        Convert an array of points in Allen Institute coordinates
+        into CellLocator coordinates.
+
+        Parameters
+        ----------
+        pts is a numpy array with shape (3, N) where N is the number of points
+        pts contains the coordinates of the points
+
+        Returns
+        -------
+        a numpy array of shape (3, N)
+        """
         return np.dot(self._a_to_c[:3,:3], pts)
 
     def c_to_allen(self, pts):
+        """
+        Convert an array of points in CellLocator coordinates
+        to Allen Institute coordinates.
+
+        Parameters
+        ----------
+        pts is a numpy array with shape (3, N) where N is the number of points
+        pts contains the coordinates of the points
+
+        Returns
+        -------
+        a numpy array with shape (3, N)
+        """
         return np.dot(self._c_to_a[:3,:3], pts)
 
     def c_to_slice(self, pts):
+        """
+        Convert an array of points from CellLocator 3D
+        coordinates to 3D coordinates with the plane of the
+        slice at z=0
+
+        Parameters
+        ----------
+        pts is a numpy array with shape (3, N) where N is the number of points
+        pts contains the coordinates of the points
+
+        Returns
+        -------
+        a numpy array of shape (3, N) denoting coordinates with the slice
+        at z=0
+        """
         pts_4d = np.zeros((4, pts.shape[1]), dtype=float)
         pts_4d[:3,:] = pts
         pts_4d[3,:] = 1.0
@@ -136,8 +181,18 @@ class CellLocatorTransformation(object):
 
     def allen_to_slice(self, pts):
         """
+        Convert an array of points in Allen Institute coordinates into
+        the 3D coordinate system in which the plane of the slice is at
+        z = 0
+
+        Parameters
+        ----------
         pts is a numpy array with shape (3, N) where N is the number of points
         pts contains the coordinates of the points
+
+        Returns
+        -------
+        A numpy array with shape (3, N)
         """
         pts_4d = np.zeros((4,pts.shape[1]), dtype=float)
         pts_4d[:3,:] = pts
@@ -147,8 +202,17 @@ class CellLocatorTransformation(object):
 
     def slice_to_allen(self, pts):
         """
+        Convert 2D coordinates in the plane of the slice into 3D coordinates
+        in the Allen Institute system.
+
+        Parameters
+        ----------
         pts is a numpy array with shape (2, N) where N is the number of points
         pts contains the coordinates of the points
+
+        Returns
+        -------
+        a numpy array with shape (3, N)
         """
         pts_4d = np.zeros((4,pts.shape[1]), dtype=float)
         pts_4d[:2,:] = pts
@@ -159,8 +223,18 @@ class CellLocatorTransformation(object):
 
     def z_from_allen(self, pts, resolution):
         """
+        Calculate distance from the plane of the slice
+
+        Parameters
+        ----------
         pts is a numpy array wth shape (3, N) where N is the number of points;
-        it contains the x,y,z coordinate values of the allen pixels
+        it contains the x,y,z coordinate values of the voxels in the Allen
+        Institute system
+
+        Returns
+        -------
+        a numpy array of z voxel values in the system where the slice is
+        at z=0
         """
         return np.dot(self._a_to_slice[2,:3], pts)+self._a_to_slice[2,3]
 
