@@ -1,10 +1,6 @@
 import os
 import sys
 
-this_dir = os.path.dirname(os.path.abspath('__file__'))
-mod_dir = this_dir.replace('VisualizationDraft', 'geom_package')
-sys.path.append(mod_dir)
-
 import planar_geometry
 import spline_utils
 import coords
