@@ -117,6 +117,18 @@ class AnnotationBase(object):
         return self.coord_transform._x_resolution
 
     def __init__(self, x_vals, y_vals, pixel_transformer=None):
+        """
+        Parameters
+        ----------
+        x_vals is a numpy array of the x values of the points defining
+        the annotation
+
+        y_vals is a numpy array of hte y values of the points defining
+        the annotation
+
+        pixel_transformer is an instance of coords.PixelTransformer that
+        that converts from microns to pixel values in the slice
+        """
         self._x_vals = np.copy(x_vals)
         self._y_vals = np.copy(y_vals)
         self._clean_border()
@@ -124,12 +136,16 @@ class AnnotationBase(object):
 
     def wc_to_pixels(self, xy):
         """
+        Convert from microns to pixels in the annotation
+
         xy is a 2xN numpy array
         """
         return self.coord_transform.wc_to_pixels(xy)
 
     def pixels_to_wc(self, pixels):
         """
+        Convert from pixels to microns in the annotation
+
         pixels is a 2xN numpy array
         """
         return self.coord_transform.pixels_to_wc(pixels)
@@ -321,6 +337,27 @@ class AnnotationBase(object):
         return mask
 
     def get_mask(self, resolution, just_boundary=False, threshold_factor=0.25):
+        """
+        Return a 2D boolean mask of pixels that are inside the annotation.
+        This mask is in the coordinate system of the brain slice denoted
+        by the annotation.
+
+        Parameters
+        ----------
+        resolution - the size in microns of one edge of a pixel
+        (pixels are assumed to be square)
+
+        just_boundary - a boolean; if True, only mask the pixels on the
+        boundary of the annotation
+
+        threshold_factor - a float; any pixel within threshold_factor*resolution
+        of the boundary wil be masked
+
+        Returns
+        -------
+        A 2D numpy array of booleans. True denotes pixels that are inside
+        the annotation. False denotes pixels that are not.
+        """
         must_generate = False
         if not hasattr(self, '_mask_params'):
             must_generate = True
