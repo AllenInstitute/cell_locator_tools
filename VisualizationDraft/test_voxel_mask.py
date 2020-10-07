@@ -28,6 +28,7 @@ if __name__ == "__main__":
     voxel_mask = VoxelMask(img_shape[2], img_shape[1], img_shape[0], resolution)
 
     t0 = time.time()
+    print('Running')
     for n in fname_list[:10]:
         if not n.endswith('json'):
             continue
@@ -37,11 +38,11 @@ if __name__ == "__main__":
             annotation = json.load(in_file)
             markup = annotation['Markups'][0]
 
-        print('go')
         test = voxel_mask.get_voxel_mask(markup)
 
         ct += 1
     dur = time.time()-t0
-    print('ran ',ct)
+    print('ran ',ct,' masks')
     per = dur/ct
-    print('mask per %e seconds' % per)
+    print('generated 1 mask per %e seconds' % per)
+    print('Note: this test did nothing to validate the output')
