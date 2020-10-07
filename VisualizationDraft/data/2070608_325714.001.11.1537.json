@@ -1,0 +1,116 @@
+{
+    "DefaultCameraPosition": [
+        5874.8019345646339,
+        -50921.417965627865,
+        -4026.264294935171
+    ],
+    "DefaultCameraViewUp": [
+        0.0,
+        0.0,
+        1.0
+    ],
+    "DefaultOntology": "None",
+    "DefaultReferenceView": "Coronal",
+    "DefaultRepresentationType": "polyline",
+    "DefaultSplineOrientation": [
+        -1.0,
+        0.0,
+        0.0,
+        5686.499999999999,
+        0.0,
+        0.0,
+        -1.0,
+        -5174.999999999999,
+        0.0,
+        1.0,
+        0.0,
+        -3987.4999999999997,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+    ],
+    "DefaultStepSize": 250.0,
+    "DefaultThickness": 250.0,
+    "Locked": 0,
+    "MarkupLabelFormat": "%N-%d",
+    "Markups": [
+        {
+            "AssociatedNodeID": "vtkMRMLModelNode10",
+            "CameraPosition": [
+                5874.8019345646339,
+                -50921.417965627865,
+                -4026.264294935171
+            ],
+            "CameraViewUp": [
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Closed": 1,
+            "Description": "",
+            "ID": "vtkMRMLMarkupsSplinesNode_0",
+            "Label": "Annotation-1",
+            "Locked": 1,
+            "Ontology": "None",
+            "OrientationWXYZ": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Points": [
+                {
+                    "x": 6422.338150289076,
+                    "y": -5174.999999999999,
+                    "z": -2274.2052023121789
+                },
+                {
+                    "x": 6927.540462427801,
+                    "y": -5174.999999999999,
+                    "z": -2274.2052023121789
+                },
+                {
+                    "x": 6949.505780346877,
+                    "y": -5174.999999999999,
+                    "z": -1966.6907514450869
+                },
+                {
+                    "x": 6444.303468208149,
+                    "y": -5174.999999999999,
+                    "z": -1944.7254335260569
+                }
+            ],
+            "Points_Count": "4",
+            "ReferenceView": "Coronal",
+            "RepresentationType": "polyline",
+            "Selected": 1,
+            "SplineOrientation": [
+                -1.0,
+                0.0,
+                0.0,
+                5686.499999999999,
+                0.0,
+                0.0,
+                -1.0,
+                -5174.999999999999,
+                0.0,
+                1.0,
+                0.0,
+                -3987.4999999999997,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "StepSize": 250.0,
+            "Thickness": 250.0,
+            "Visibility": 1
+        }
+    ],
+    "Markups_Count": 1,
+    "TextList": [
+        null
+    ],
+    "TextList_Count": 0
+}
