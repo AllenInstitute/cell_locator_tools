@@ -157,10 +157,10 @@ class VoxelMask(object):
                (annotation.border_y-center_y)**2)
 
         radius_sq = dsq.max()
+        radius = self.resolution+np.sqrt(thickness**2+radius_sq)
 
         center_allen = slice_transform.slice_to_allen(np.array([[center_x],
                                                                 [center_y]]))
-        radius = self.resolution+np.sqrt(thickness**2+radius_sq)
 
         center_voxel = np.round(center_allen/self.resolution).astype(int)
         radius_voxel = np.ceil(radius/self.resolution).astype(int)
