@@ -14,8 +14,26 @@ import spline_utils
 
 
 class VoxelMask(object):
+    """
+    This class stores a 3D grid of voxels as a flattened numpy array
+    (i.e. the result of np.zeros((nx, ny, nz)).flatten())
+
+    The method get_voxel_mask takes a CellLocator annotation and returns
+    a boolean mask on that flattened voxel grid in which every voxel
+    overlapping the annotation is set to True.
+    """
 
     def __init__(self, nx, ny, nz, resolution):
+        """
+        Parameters
+        ----------
+        nx - an int; the number of voxels in the grid in the x direction
+        ny - an int; the number of voxels in the grid in the y direction
+        nz - an int; the number of voxels in the grid in a the z direction
+        resolution - a float; the size in microns of a voxel's edge
+
+        (all voxels are assumed to be cubes)
+        """
         self.nx = nx
         self.ny = ny
         self.nz = nz
@@ -34,6 +52,9 @@ class VoxelMask(object):
         return annotation
 
     def _get_bdry(self):
+        """
+        Return the indices of all of the voxels on the boundary of the grid
+        """
         z_range = np.arange(self.nz, dtype=int)
         y_range = np.arange(self.ny, dtype=int)
         x_range = np.arange(self.nx, dtype=int)
@@ -82,6 +103,25 @@ class VoxelMask(object):
         return np.array([x, y, z])
 
     def get_voxel_mask(self, markup):
+        """
+        Read in a CellLocator annotation and return a boolean mask
+        indicating which voxels in the flattened 3D grid are contained
+        in the annotation.
+
+        Parameters
+        ----------
+        markup - a dict denoting one CellLocator annotation. Read in from the
+                 CellLocator json output
+
+        Returns
+        -------
+        valid_voxels - a numpy array of booleans that is nx*ny*nz long.
+                       Every element in the array that is True corresponds
+                       to a voxel that is in the annotation.
+
+        Note: valid_voxels.reshape((nz, ny, nx)) will reconstitute
+        the 3D numpy array in the same shape as the initial atlas file.
+        """
 
         if markup['RepresentationType'] == 'spline':
             ann_class = spline_utils.SplineAnnotation
