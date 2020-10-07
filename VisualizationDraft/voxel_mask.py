@@ -131,6 +131,8 @@ class VoxelMask(object):
 
         thickness = markup['Thickness']
 
+        # object to transform between coordinates in the slice
+        # and 3D Allen Institute coordinates
         slice_transform = cell_locator_utils.CellLocatorTransformation(markup,
                                                  from_pts=False,
                                                  forced_origin=None)
@@ -142,10 +144,19 @@ class VoxelMask(object):
             markup_pts[2,i_pt] = pt['z']
 
         edge_coords = slice_transform.allen_to_slice(self.bdry_vol_coords)
+
+        # set the origin for the "World Coordinates" that
+        # we will use in the slice ("World Coordinates" means physical
+        # coordinates in microns, as opposed to pixel coordinates)
+        # to be the xmin, ymin corner of the voxel cube
         wc_origin = np.array([edge_coords[0,:].min(),
                               edge_coords[1,:].min()])
 
         markup_slice = slice_transform.c_to_slice(markup_pts)
+
+        # create an object representing the annotation and get
+        # a mask of pixels within the annotation in the 2D
+        # coordinate system anchored to the annotation
         annotation = self._get_annotation(wc_origin,
                                           markup_slice,
                                           ann_class)
@@ -157,15 +168,23 @@ class VoxelMask(object):
         dsq = ((annotation.border_x-center_x)**2 +
                (annotation.border_y-center_y)**2)
 
+        # radius will be the maximum distance from the center of the
+        # annotation a voxel can be and still have a chance to be inside
+        # the annotation (this will limit the number of voxels we have
+        # to iterate over and set to True in the final mask)
         radius_sq = dsq.max()
         radius = self.resolution+np.sqrt(thickness**2+radius_sq)
 
+        # find the center of the annotation in 3D Allen Institute coordinates
         center_allen = slice_transform.slice_to_allen(np.array([[center_x],
                                                                 [center_y]]))
 
+        # convert from world coordinates (microns) to voxels
         center_voxel = np.round(center_allen/self.resolution).astype(int)
         radius_voxel = np.ceil(radius/self.resolution).astype(int)
 
+        # the minimum and maximum voxel values that we will consider when
+        # setting mask voxels to True
         xyz_min = center_voxel-radius_voxel
         xyz_max = center_voxel+radius_voxel
 
@@ -181,6 +200,10 @@ class VoxelMask(object):
                                          idy*self.resolution,
                                          idz*self.resolution])
 
+        # z coordinates in the coordinate system where the slice is at z=0
+        # (this is also going to be used to limit the voxels we scan over by
+        # restricting consideration to those that are within thickness of the
+        # actual annotation)
         z_plane = np.dot(slice_transform._a_to_slice[2,:3],
                          vol_coords_first_dex) + slice_transform._a_to_slice[2,3]
 
@@ -197,17 +220,37 @@ class VoxelMask(object):
         del z_plane
         del vol_coords_first_dex
 
+        # vol_coords_in_plane is now the world coordinates of points that may be
+        # in the annotation
+        #
+        # idx, idy, idz are the 3D voxel indices of points that may be in the annotation
+
+        # Find the pixel coordinates of the voxels under consideration in the coordinate
+        # system anchored to the annotation. This will correspond to the 2D projection of
+        # every interesting voxel onto the 2D space of the annotation
         slice_coords = slice_transform.allen_to_slice(vol_coords_in_plane)
         pixel_coords = annotation.wc_to_pixels(slice_coords[:2,:])
 
         max_x = pixel_coords[0,:].max()+1
         max_y = pixel_coords[1,:].max()+1
+
+        # Create a pixel mask corresponding to all of the pixels in a single
+        # 2D slice of the annotation. This works because we set the the origin
+        # of the annotation's world coordinate system to be at the minimum
+        # values of 2D edge_coords earlier, meaning that raw_mask[0,0]
+        # corresponds to a pixel value of (0,0)
         pixel_mask = np.zeros((max_x, max_y), dtype=bool)
         raw_mask = raw_mask.transpose()
         pixel_mask[:raw_mask.shape[0], :raw_mask.shape[1]] = raw_mask
         pixel_mask = pixel_mask.flatten()
+
+        # take the pixel_coords of the voxels under consideration and flatten them
+        # into the 1D indices corresponding to the contents of pixel_mask
         test_pixel_indices = pixel_coords[0,:]*max_y
         test_pixel_indices += pixel_coords[1,:]
+
+        # assign True all Voxels whose 2D projection onto the annotation
+        # corresponds with pixels in the annotation
         valid_voxels = np.zeros(self.nx*self.ny*self.nz, dtype=bool)
         in_plane_dexes = idz*self.nx*self.ny+idy*self.nx+idx
         valid_voxels[in_plane_dexes] = pixel_mask[test_pixel_indices]
