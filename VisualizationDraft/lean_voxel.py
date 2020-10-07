@@ -11,7 +11,6 @@ import coords
 import planar_geometry
 import cell_locator_utils
 import spline_utils
-import time
 
 
 class VoxelMask(object):
@@ -126,8 +125,6 @@ class VoxelMask(object):
                                                                 [center_y]]))
         radius = self.resolution+np.sqrt(thickness**2+radius_sq)
 
-        print('starting first_mask')
-        t0 = time.time()
         center_voxel = np.round(center_allen/self.resolution).astype(int)
         radius_voxel = np.ceil(radius/self.resolution).astype(int)
 
@@ -142,12 +139,9 @@ class VoxelMask(object):
         idy = mesh.pop(1).flatten()
         idz = mesh.pop(0).flatten()
 
-        print('first mask in %e (%.2e)' % ((time.time()-t0), len(idx)/(self.nx*self.ny*self.nz)))
-
         vol_coords_first_dex = np.array([idx*self.resolution,
                                          idy*self.resolution,
                                          idz*self.resolution])
-        d_vol = time.time()-t0
 
         z_plane = np.dot(slice_transform._a_to_slice[2,:3],
                          vol_coords_first_dex) + slice_transform._a_to_slice[2,3]
