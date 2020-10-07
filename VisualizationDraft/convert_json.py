@@ -77,7 +77,7 @@ if __name__ == "__main__":
             duration = time.time()-t0
             per = duration/ii
             pred = per*len(json_file_list)
-            print('%d in %e seconds (per %e; predict %e)' % (ii,duration,per,pred))
+            print('%d in %e seconds (%e per file; predict total will take %e)' % (ii,duration,per,pred))
 
     print('took %e s per' % ((time.time()-t0)/len(json_file_list)))
 
