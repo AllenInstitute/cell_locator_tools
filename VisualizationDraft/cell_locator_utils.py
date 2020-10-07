@@ -221,7 +221,7 @@ class CellLocatorTransformation(object):
         pts_4d = np.dot(self._slice_to_a, pts_4d)
         return pts_4d[:3,:]
 
-    def z_from_allen(self, pts, resolution):
+    def z_from_allen(self, pts):
         """
         Calculate distance from the plane of the slice
 
@@ -302,7 +302,7 @@ class BrainSlice(object):
         return self._pixel_y
 
     def get_slice_mask_from_allen(self, brain_volume):
-        z_value = self.coord_converter.z_from_allen(brain_volume, self.resolution)
+        z_value = self.coord_converter.z_from_allen(brain_volume)
         upper_lim = 0.5*np.sqrt(3.0)*self.resolution
         lower_lim = -1.0*self.thickness-upper_lim
         return np.logical_and(z_value<=upper_lim, z_value>=lower_lim)
