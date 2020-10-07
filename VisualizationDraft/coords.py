@@ -1,8 +1,27 @@
 import numpy as np
 
 class PixelTransformer(object):
+    """
+    A class to govern the conversion between physical world coordinates
+    and pixel coordinates
+    """
 
     def __init__(self, origin, rotation, x_resolution, y_resolution):
+        """
+        Parameters
+        ----------
+        origin - a 2-element numpy array indicating the origin of the
+        coordinate system
+
+        rotation - a 2x2 numpy array encoding the rotation from
+        world coordinates to pixel coordinates
+
+        x_resolution - a float indicating the resolution of pixels in
+        the x direction
+
+        y_resolution - a float indicating the resolution of pixels in
+        the y direction
+        """
         self._origin = np.copy(origin)
         self._rotation = np.copy(rotation)
         self._inv_rotation = np.linalg.inv(rotation)
@@ -27,6 +46,9 @@ class PixelTransformer(object):
 
     def wc_to_pixels(self, pts):
         """
+        Convert an array of points in world coordinates into
+        pixel coordinates
+
         pts is 2xN
         """
         r = np.dot(self._rotation, pts)
@@ -38,6 +60,9 @@ class PixelTransformer(object):
 
     def pixels_to_wc(self, pixels):
         """
+        Convert an array of points in pixel coordinates into
+        world coordinates
+
         pixels is 2xN
         """
         w = np.copy(pixels).astype(float)
