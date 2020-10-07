@@ -9,15 +9,28 @@ import time
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--atlas_name', type=str, default='atlasVolume.mhd')
-    parser.add_argument('--json_name', type=str, default=None)
-    parser.add_argument('--out_name', type=str, default=None)
+    parser.add_argument('--atlas_name', type=str, default='atlasVolume.mhd',
+                        help='the mhd volume defining the mouse brain atlas'
+                        ' volume, such as can be downloaded here: '
+                        'http://help.brain-map.org/display/mousebrain/API#API-DownloadAtlas')
+    parser.add_argument('--json_name', type=str, default=None,
+                        help='the name of the json file (or a directory'
+                        ' containing json files) output by CellLocator'
+                        ' which you would like to convert')
+    parser.add_argument('--out_name', type=str, default=None,
+                        help='the name of the nrrd file you would like to'
+                        ' produce (Note: if json_name is the name of a dir,'
+                        ' the nrrd file will contain all of the annotations in'
+                        ' that dir, each with a unique color-specifying int)')
     args = parser.parse_args()
 
     if args.out_name is None:
         raise RuntimeError('Must specify out_name')
     if args.json_name is None:
         raise RuntimeError('Must specify json_name')
+
+    if not os.path.isfile(args.atlas_name):
+        raise RuntimeError("Atlas file\n%s\ndoes not exist" % args.atlas_name)
 
     with open(args.atlas_name, 'r') as in_file:
         for line in in_file:
