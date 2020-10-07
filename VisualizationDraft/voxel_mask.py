@@ -50,7 +50,8 @@ class VoxelMask(object):
 
     def _get_bdry(self):
         """
-        Return the indices of all of the voxels on the boundary of the grid
+        Return the indices of all of the voxels on the boundary faces of
+        the voxel cube
         """
         z_range = np.arange(self.nz, dtype=int)
         y_range = np.arange(self.ny, dtype=int)
