@@ -9,10 +9,10 @@ import time
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--atlas_name', type=str, default='atlasVolume.mhd',
+    parser.add_argument('--atlas_name', type=str, default='average_template_10.nrrd',
                         help='the mhd volume defining the mouse brain atlas'
                         ' volume, such as can be downloaded here: '
-                        'http://help.brain-map.org/display/mousebrain/API#API-DownloadAtlas')
+                        'http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/')
     parser.add_argument('--json_name', type=str, default=None,
                         help='the name of the json file (or a directory'
                         ' containing json files) output by CellLocator'
@@ -32,17 +32,13 @@ if __name__ == "__main__":
     if not os.path.isfile(args.atlas_name):
         raise RuntimeError("Atlas file\n%s\ndoes not exist" % args.atlas_name)
 
-    with open(args.atlas_name, 'r') as in_file:
-        for line in in_file:
-            params = line.strip().split()
-            if params[0] == 'ElementSpacing':
-                resolution = int(params[2])
-
-    print('resolution ',resolution)
 
     atlas_img = SimpleITK.ReadImage(args.atlas_name)
+    resolution = atlas_img.GetSpacing()[2]
+    print('resolution ',resolution)
 
-    atlas_array = atlas_img = SimpleITK.GetArrayFromImage(atlas_img)
+
+    atlas_array = SimpleITK.GetArrayFromImage(atlas_img)
 
     voxel_mask = VoxelMask(atlas_array.shape[2],
                            atlas_array.shape[1],
@@ -79,13 +75,9 @@ if __name__ == "__main__":
             pred = per*len(json_file_list)
             print('%d in %e seconds (%e per file; predict total will take %e)' % (ii,duration,per,pred))
 
-    print('took %e s per' % ((time.time()-t0)/len(json_file_list)))
+    print('took %e s per file' % ((time.time()-t0)/len(json_file_list)))
 
 
-
-    output_img = SimpleITK.GetImageFromArray(output_img.reshape(atlas_array.shape))
-    output_img.SetSpacing((resolution, resolution, resolution))
-    writer = SimpleITK.ImageFileWriter()
-    writer.SetFileName(args.out_name)
-    writer.SetUseCompression(True)
-    writer.Execute(output_img)
+    output_img = SimpleITK.GetImageFromArray( output_img.reshape(atlas_array.shape) )
+    output_img.CopyInformation( atlas_img )
+    SimpleITK.WriteImage( output_img, args.out_name, True )
