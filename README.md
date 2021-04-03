@@ -1,6 +1,6 @@
 # CellLocator_ROI_Prototype
 
-Directory VisualizationDraft contains Python scripts to convert [Cell Locator](https://github.com/BICCN/cell-locator) json files to ITK compatible (nrrd, nii.gz) volume mask
+Directory VisualizationDraft contains Python scripts to convert [Cell Locator](https://github.com/BICCN/cell-locator) json file(s) to a ITK compatible (nrrd, nii.gz) volume mask
 
 > python convert_json.py --json_name input.json --out_name output.nii.gz --atlas_name average_template_10.nrrd
 
