@@ -1,6 +1,6 @@
 # Cell Locator json file converters
 
-## Render annotations in json file(s) to image volume
+## Render annotations in legacy json file(s) to an image volume
 
 Directory *VisualizationDraft* contains Python scripts to convert [Cell Locator](https://github.com/BICCN/cell-locator) json file(s) to a ITK compatible volume mask (eg nrrd, nii.gz)
 
@@ -14,7 +14,7 @@ The json file format changed after the Release [0.1.0-2020-07-30](https://github
 
 For newer format files, you can convert to legacy format before using rendering script.
 
-## Convert new to legacy json format
+## Convert new to legacy format json files
 
 Directory *ConvertBetweenJsonVersions* contains Python scripts to convert newer format Cell Locator json files to legacy format.
 
