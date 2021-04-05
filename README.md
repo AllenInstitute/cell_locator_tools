@@ -1,4 +1,4 @@
-# Cell Locator json file(s) converter
+# Cell Locator json file converters
 
 ## Render annotations in json file(s) to image volume
 
