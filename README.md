@@ -6,7 +6,7 @@ Directory *VisualizationDraft* contains Python scripts to convert [Cell Locator]
 
 > python convert_json.py --json_name input.json --out_name output.nii.gz --atlas_name average_template_10.nrrd
 
-If parameter json_name is a directory, the output volume will contain all the annotations of all json files in the directory each specified with a unique value. Scripts assumes non-overlapping annotations. Areas of overlapped are assigned to only one annotation with no guaranteed ordering.
+If parameter json_name is a directory, the output volume will contain the annotations of all json files in the directory each specified with a unique value. Scripts assumes non-overlapping annotations. Areas of overlapped are assigned to only one annotation with no guaranteed ordering.
 
 This conversion code is known to work for annotations on the Allen Mouse CCF and Cell Locator outputs from version [0.1.0-2020-07-30](https://github.com/BICCN/cell-locator/releases/tag/0.1.0-2020-07-30).
 
@@ -14,7 +14,7 @@ The json file format changed after the Release [0.1.0-2020-07-30](https://github
 
 For newer format files, you can convert to legacy format before using rendering script.
 
-## Convert new to legacy format json files
+## Convert new format to legacy format json files
 
 Directory *ConvertBetweenJsonVersions* contains Python scripts to convert newer format Cell Locator json files to legacy format.
 
@@ -23,6 +23,16 @@ Directory *ConvertBetweenJsonVersions* contains Python scripts to convert newer 
 Each annotation within the input.json is converted to individual json files in the output_directory. The output directory can be used as input for rendering script.
 
 This conversion code is known to work for annotations on the Allen Mouse CCF and Cell Locator outputs from version [0.1.0-2020-09-18](https://github.com/BICCN/cell-locator/releases/tag/0.1.0-2020-09-18).
+
+## Convert legacy format to new format json files
+
+Directory *ConvertBetweenJsonVersions* contains Python scripts to convert legacy format Cell Locator json files to new format.
+
+> python convert_old_to_new_json.py --json_name input.json --out_name output.json
+
+If parameter json_name is a directory, the output json will contain the annotations of all json files in the directory each specified by its filename (without extension) in the output.json file.
+
+This conversion code is known to work for annotations on the Allen Mouse CCF and Cell Locator outputs from version [0.1.0-2020-07-30](https://github.com/BICCN/cell-locator/releases/tag/0.1.0-2020-07-30).
 
 
 # Level of Support
